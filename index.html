@@ -509,7 +509,7 @@ body.drag-over #content { background:rgba(79,142,247,.03); }
       <button class="sb-btn" onclick="navigate('type','audio')"><span class="ic">🎵</span> Audio <span class="ct" id="cnt-aud">0</span></button>
     </div>
     <div class="sb-store">
-      <div class="st-lbl"><span>Storage</span><span id="storage-pct">—</span></div>
+      <div class="st-lbl"><span>Device Storage</span><span id="storage-pct" style="color:var(--txt2)">—</span></div>
       <div class="st-bar"><div class="st-fill" id="storage-fill"></div></div>
       <div class="st-inf" id="storage-info">Calculating…</div>
       <button class="tr-btn" onclick="showTransferModal()">📲 Transfer to Device</button>
@@ -563,6 +563,7 @@ body.drag-over #content { background:rgba(79,142,247,.03); }
   <button class="m-nit"    id="mn-search"  onclick="openMobileSearch()"><span class="ni">🔍</span>Search</button>
   <button class="m-nit"    id="mn-starred" onclick="mobileNav('starred',this)"><span class="ni">⭐</span>Starred</button>
   <button class="m-nit"    id="mn-more"    onclick="toggleSidebar()"><span class="ni">☰</span>More</button>
+  <button class="m-nit"    id="mn-transfer" onclick="showTransferModal()"><span class="ni">📲</span>Transfer</button>
 </nav>
 
 <!-- MOBILE SEARCH -->
@@ -817,7 +818,22 @@ function initDb() {
   };
 }
 
-function saveDb() { try { localStorage.setItem('filevault_db', JSON.stringify(db)); } catch(e){} }
+function saveDb() {
+  try {
+    localStorage.setItem('filevault_db', JSON.stringify(db));
+  } catch(e) {
+    // localStorage full — save without dataUrls (metadata only)
+    try {
+      const slim = { items: {} };
+      Object.entries(db.items).forEach(([k,v]) => {
+        slim.items[k] = Object.assign({}, v);
+        delete slim.items[k]._dataUrl; // strip file data to save space
+      });
+      localStorage.setItem('filevault_db', JSON.stringify(slim));
+      toast('⚠️ Storage full — file previews not saved. Use Export to backup.');
+    } catch(e2) { console.warn('saveDb failed:', e2); }
+  }
+}
 
 // ===== HELPERS =====
 function uid() { return 'id_' + Math.random().toString(36).substr(2,9); }
@@ -914,8 +930,8 @@ function renderHome(c) {
   }
   
   if (folders.length) {
-    html += `<div class="sec-hd"><div class="sec-tt">Folders</div><div class="sec-ac" onclick="showNewFolderModal()">＋ New Folder</div></div>`;
-    html += `<div class="files-grid" style="margin-bottom:24px">`;
+    html += `<div class="sec-hd"><div class="sec-tt">Folders</div><div class="sec-ac" onclick="showNewFolderModal()">＋ New</div></div>`;
+    html += `<div class="f-grid" style="margin-bottom:24px">`;
     html += folders.map(f => renderItemGrid(f)).join('');
     html += '</div>';
   }
@@ -923,10 +939,10 @@ function renderHome(c) {
   if (files.length) {
     html += `<div class="sec-hd"><div class="sec-tt">Files</div></div>`;
     if (state.viewMode === 'grid') {
-      html += `<div class="files-grid">` + files.map(f => renderItemGrid(f)).join('') + '</div>';
+      html += `<div class="f-grid">` + files.map(f => renderItemGrid(f)).join('') + '</div>';
     } else {
       html += renderListHeader();
-      html += `<div class="files-list">` + files.map(f => renderItemRow(f)).join('') + '</div>';
+      html += `<div class="f-list">` + files.map(f => renderItemRow(f)).join('') + '</div>';
     }
   }
   
@@ -941,8 +957,8 @@ function renderRecents(c) {
   const items = Object.values(db.items).filter(i=>i.id!=='root').sort((a,b)=>b.createdAt-a.createdAt).slice(0,30);
   c.innerHTML = `<div class="sec-hd"><div class="sec-tt">🕐 Recently Added</div></div>` +
     (items.length ? (state.viewMode==='grid'
-      ? `<div class="files-grid">${items.map(renderItemGrid).join('')}</div>`
-      : renderListHeader()+`<div class="files-list">${items.map(renderItemRow).join('')}</div>`)
+      ? `<div class="f-grid">${items.map(renderItemGrid).join('')}</div>`
+      : renderListHeader()+`<div class="f-list">${items.map(renderItemRow).join('')}</div>`)
     : `<div class="empty"><div class="empty-ic">🕐</div><div class="empty-tt">No recent files</div></div>`);
 }
 
@@ -950,8 +966,8 @@ function renderStarred(c) {
   const items = Object.values(db.items).filter(i=>i.starred&&i.id!=='root');
   c.innerHTML = `<div class="sec-hd"><div class="sec-tt">⭐ Starred</div></div>` +
     (items.length ? (state.viewMode==='grid'
-      ? `<div class="files-grid">${items.map(renderItemGrid).join('')}</div>`
-      : renderListHeader()+`<div class="files-list">${items.map(renderItemRow).join('')}</div>`)
+      ? `<div class="f-grid">${items.map(renderItemGrid).join('')}</div>`
+      : renderListHeader()+`<div class="f-list">${items.map(renderItemRow).join('')}</div>`)
     : `<div class="empty"><div class="empty-ic">⭐</div><div class="empty-tt">No starred files yet</div><div class="empty-st">Star files to find them quickly</div></div>`);
 }
 
@@ -965,18 +981,18 @@ function renderType(c) {
   const labels = {image:'🖼️ Images',doc:'📄 Documents',video:'🎬 Videos',audio:'🎵 Audio',pdf:'📕 PDFs',zip:'📦 Archives'};
   c.innerHTML = `<div class="sec-hd"><div class="sec-tt">${labels[ext]||ext}</div></div>` +
     (items.length ? (state.viewMode==='grid'
-      ? `<div class="files-grid">${items.map(renderItemGrid).join('')}</div>`
-      : renderListHeader()+`<div class="files-list">${items.map(renderItemRow).join('')}</div>`)
+      ? `<div class="f-grid">${items.map(renderItemGrid).join('')}</div>`
+      : renderListHeader()+`<div class="f-list">${items.map(renderItemRow).join('')}</div>`)
     : `<div class="empty"><div class="empty-ic">📭</div><div class="empty-tt">No files here</div></div>`);
 }
 
 function renderSearch(c) {
   const q = state.searchQuery.toLowerCase();
   const items = Object.values(db.items).filter(i=>i.id!=='root'&&i.name.toLowerCase().includes(q));
-  c.innerHTML = `<div class="sec-hd"><div class="sec-tt">🔍 Results for "${state.searchQuery}"</div><div style="font-size:12px;color:var(--txt3)">${items.length} found</div></div>` +
+  c.innerHTML = `<div class="sec-hd"><div class="sec-tt">🔍 "${state.searchQuery}"</div><div style="font-size:13px;color:var(--txt3)">${items.length} found</div></div>` +
     (items.length ? (state.viewMode==='grid'
-      ? `<div class="files-grid">${items.map(renderItemGrid).join('')}</div>`
-      : renderListHeader()+`<div class="files-list">${items.map(renderItemRow).join('')}</div>`)
+      ? `<div class="f-grid">${items.map(renderItemGrid).join('')}</div>`
+      : renderListHeader()+`<div class="f-list">${items.map(renderItemRow).join('')}</div>`)
     : `<div class="empty"><div class="empty-ic">🔍</div><div class="empty-tt">No results found</div></div>`);
 }
 
@@ -989,7 +1005,7 @@ function renderItemGrid(item) {
     ondblclick="handleItemDblClick('${item.id}')"
     oncontextmenu="showCtx(event,'${item.id}')">
     <div class="f-chk">${sel?'✓':''}</div>
-    <div class="f-thumb ft-${ti.cls} bg-${ti.cls}">${ti.emoji}</div>
+    <div class="f-thumb tc-${ti.cls} bg-${ti.cls}">${ti.emoji}</div>
     <div class="f-name" title="${esc(item.name)}">${esc(item.name)}</div>
     <div class="f-meta">${item.type==='folder' ? childrenOf(item.id).length+' items' : fmt(item.size)} · ${fmtDate(item.createdAt)}${star?' '+star:''}</div>
     <button class="f-more" onclick="event.stopPropagation();showCtx(event,'${item.id}')">⋯</button>
@@ -1003,11 +1019,10 @@ function renderItemRow(item) {
     onclick="handleItemClick(event,'${item.id}')"
     ondblclick="handleItemDblClick('${item.id}')"
     oncontextmenu="showCtx(event,'${item.id}')">
-    <div class="f-row-icon ft-${ti.cls} bg-${ti.cls}">${ti.emoji}</div>
-    <div class="f-row-name">${esc(item.name)}${item.starred?' ⭐':''}</div>
-    <div class="f-row-size">${item.type==='folder'?childrenOf(item.id).length+' items':fmt(item.size)}</div>
-    <div class="f-row-date">${fmtDate(item.createdAt)}</div>
-    <div class="f-row-actions">
+    <div class="f-ric tc-${ti.cls} bg-${ti.cls}">${ti.emoji}</div>
+    <div class="f-rname">${esc(item.name)}${item.starred?' ⭐':''}</div>
+    <div class="f-rsz">${item.type==='folder'?childrenOf(item.id).length+' items':fmt(item.size)}</div>
+    <div class="f-ract">
       <button class="ra-btn" onclick="event.stopPropagation();openViewer('${item.id}')" title="Preview">👁</button>
       <button class="ra-btn" onclick="event.stopPropagation();toggleStar('${item.id}')" title="Star">${item.starred?'⭐':'☆'}</button>
       <button class="ra-btn" onclick="event.stopPropagation();showCtx(event,'${item.id}')" title="More">⋯</button>
@@ -1030,15 +1045,20 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 // ===== BREADCRUMB =====
 function updateBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
-  let html = `<span class="breadcrumb-item" onclick="breadcrumbNav(-1)">Home</span>`;
+  // Show back arrow when inside a folder
+  let html = '';
+  if (state.currentPath.length > 0) {
+    html += `<span class="bc-i" onclick="breadcrumbNav(state.currentPath.length-2)" style="font-size:20px;padding:2px 6px 2px 0">‹</span>`;
+  }
+  html += `<span class="bc-i${state.currentPath.length===0?' cur':''}" onclick="breadcrumbNav(-1)">Home</span>`;
   state.currentPath.forEach((id,idx) => {
     const item = db.items[id];
     if (!item) return;
-    html += `<span class="breadcrumb-sep">›</span>`;
+    html += `<span class="bc-sep">›</span>`;
     if (idx === state.currentPath.length-1)
-      html += `<span class="breadcrumb-item current">${esc(item.name)}</span>`;
+      html += `<span class="bc-i cur">${esc(item.name)}</span>`;
     else
-      html += `<span class="breadcrumb-item" onclick="breadcrumbNav(${idx})">${esc(item.name)}</span>`;
+      html += `<span class="bc-i" onclick="breadcrumbNav(${idx})">${esc(item.name)}</span>`;
   });
   bc.innerHTML = html;
 }
@@ -1055,12 +1075,10 @@ function updateSidebar() {
   document.getElementById('cnt-aud').textContent = countType('audio');
 }
 function updateStorage() {
-  const total = 5*1024*1024*1024; // 5GB
   const used = totalSize();
-  const pct = Math.min(100, Math.round(used/total*100));
-  document.getElementById('storage-pct').textContent = pct + '%';
-  document.getElementById('storage-fill').style.width = pct + '%';
-  document.getElementById('storage-info').textContent = fmt(used) + ' used of 5 GB';
+  document.getElementById('storage-pct').textContent = fmt(used);
+  document.getElementById('storage-fill').style.width = Math.min(100, used / (50*1024*1024) * 100) + '%';
+  document.getElementById('storage-info').textContent = Object.values(db.items).filter(i=>i.id!=='root').length + ' items stored on this device';
 }
 
 // ===== SELECTION =====
@@ -1069,14 +1087,14 @@ function handleItemClick(e, id) {
   if (!item) return;
   if (e.shiftKey || e.ctrlKey || e.metaKey || state.selectedIds.size > 0) {
     toggleSelect(id);
-  } else if (item.type === 'file') {
-    // Single click on a file = open viewer
+  } else if (item.type === 'folder') {
+    // Single tap/click on folder = open it
+    clearSelection();
+    openFolder(id);
+  } else {
+    // Single tap/click on file = open viewer
     clearSelection();
     openViewer(id);
-  } else {
-    // Single click on folder = select; dblclick opens
-    clearSelection();
-    toggleSelect(id);
   }
 }
 function handleItemDblClick(id) {
@@ -1090,18 +1108,17 @@ function toggleSelect(id) {
   if (state.selectedIds.has(id)) state.selectedIds.delete(id);
   else state.selectedIds.add(id);
   updateSelBar();
-  // update visual
   const card = document.getElementById('card-'+id)||document.getElementById('row-'+id);
   if (card) {
     card.classList.toggle('on', state.selectedIds.has(id));
-    const chk = card.querySelector('.file-check');
+    const chk = card.querySelector('.f-chk');
     if (chk) chk.textContent = state.selectedIds.has(id) ? '✓' : '';
   }
 }
 function clearSelection() {
   state.selectedIds.forEach(id => {
     const card = document.getElementById('card-'+id)||document.getElementById('row-'+id);
-    if (card) { card.classList.remove('on'); const chk=card.querySelector('.file-check'); if(chk) chk.textContent=''; }
+    if (card) { card.classList.remove('on'); const chk=card.querySelector('.f-chk'); if(chk) chk.textContent=''; }
   });
   state.selectedIds.clear();
   updateSelBar();
@@ -1121,11 +1138,16 @@ function showCtx(e, id) {
   state.ctxTargetId = id;
   const menu = document.getElementById('ctx-menu');
   menu.classList.add('on');
-  const x = Math.min(e.clientX, window.innerWidth - 190);
-  const y = Math.min(e.clientY, window.innerHeight - 320);
+  // Position menu — keep it on screen
+  const mw = 210, mh = 320;
+  const navH = window.innerWidth <= 768 ? 70 : 0;
+  let x = e.clientX, y = e.clientY;
+  if (x + mw > window.innerWidth - 8) x = window.innerWidth - mw - 8;
+  if (y + mh > window.innerHeight - navH - 8) y = Math.max(8, window.innerHeight - navH - mh - 8);
   menu.style.left = x + 'px'; menu.style.top = y + 'px';
   // Update star label
-  menu.querySelector('.ctx-item:nth-child(3)').textContent = (ctxItem?.starred ? '★ Unstar' : '⭐ Star');
+  const starItem = document.getElementById('ctx-star-item');
+  if (starItem) starItem.textContent = (ctxItem?.starred ? '★ Unstar' : '⭐ Star');
 }
 document.addEventListener('click', () => document.getElementById('ctx-menu').classList.remove('on'));
 function ctxOpen() { const it = db.items[state.ctxTargetId]; if(!it) return; if(it.type==='folder') openFolder(it.id); else openViewer(it.id); }
@@ -1191,9 +1213,11 @@ function closeModal(id) { document.getElementById(id).classList.remove('on'); }
 function showNewFolderModal() {
   document.getElementById('folder-name-inp').value = '';
   state.folderColorSel = 'gold';
-  document.querySelectorAll('.cpdot').forEach(d => d.classList.toggle('sel', d.dataset.color==='gold'));
+  document.querySelectorAll('.cpdot').forEach(d => d.classList.remove('on'));
+  const goldDot = document.querySelector('.cpdot[onclick*="gold"]');
+  if (goldDot) goldDot.classList.add('on');
   openModal('modal-folder');
-  setTimeout(()=>document.getElementById('folder-name-inp').focus(),200);
+  setTimeout(()=>{ const inp = document.getElementById('folder-name-inp'); if(inp) inp.focus(); }, 250);
 }
 function selectColor(el, color) {
   state.folderColorSel = color;
@@ -1226,7 +1250,7 @@ function processFiles(files) {
     const id = uid();
     const ext = getExt(f.name);
     db.items[id] = { id, type:'file', name:f.name, parentId:currentFolderId(), ext, size:f.size, createdAt:Date.now(), starred:false };
-    prog.innerHTML += `<div class="p-item"><div class="p-name">${esc(f.name)}</div><div class="p-bwrap"><div class="p-bar" id="pb-${id}" style="width:0%"></div></div><div class="prog-done" id="pd-${id}" style="display:none">✓</div></div>`;
+    prog.innerHTML += `<div class="p-item"><div class="p-name">${esc(f.name)}</div><div class="p-bwrap"><div class="p-bar" id="pb-${id}" style="width:0%"></div></div><div id="pd-${id}" style="display:none;color:var(--green);font-size:16px">✓</div></div>`;
 
     // Read the actual file as data URL so we can preview it
     const reader = new FileReader();
@@ -1469,7 +1493,7 @@ function showMoveModal(ids) {
   const folders = Object.values(db.items).filter(i=>i.type==='folder'&&!ids.includes(i.id));
   let html = '';
   if (!folders.length) { html = '<div class="empty"><div class="empty-ic">📂</div><div class="empty-tt">No folders to move to</div></div>'; }
-  else { html = folders.map(f=>{ const ti=typeInfo(f); return `<div class="f-row" onclick="doMove('${f.id}')"><div class="f-row-icon tc-folder bg-folder">${ti.emoji}</div><div class="f-row-name">${esc(f.name)}</div></div>`; }).join(''); }
+  else { html = folders.map(f=>{ const ti=typeInfo(f); return `<div class="f-row" onclick="doMove('${f.id}')"><div class="f-ric tc-folder bg-folder">${ti.emoji}</div><div class="f-rname">${esc(f.name)}</div></div>`; }).join(''); }
   document.getElementById('move-folder-list').innerHTML = html;
   openModal('modal-move');
 }
@@ -1495,7 +1519,7 @@ function handleSearch(q) {
 
 // ===== SIDEBAR =====
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sb-ov').classList.toggle('on'); }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('on'); document.getElementById('sb-ov').classList.remove('on'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-ov').classList.remove('on'); }
 
 // ===== FAB =====
 function showFabMenu() { toggleFabMenu(); }
@@ -1543,8 +1567,8 @@ function closeViewer() {
   // Revoke any object URLs
   if (viewer.objectUrl) { URL.revokeObjectURL(viewer.objectUrl); viewer.objectUrl = null; }
   // Pause any media
-  const vid = document.getElementById('vw-video'); if (vid) vid.pause();
-  const aud = document.getElementById('vw-audio'); if (aud) aud.pause();
+  const vid = document.getElementById('vw-vid'); if (vid) vid.pause();
+  const aud = document.getElementById('vw-aud'); if (aud) aud.pause();
   viewer.id = null;
 }
 
@@ -1564,8 +1588,8 @@ function renderViewer(id) {
   document.getElementById('vwr-name').textContent = item.name;
   document.getElementById('vwr-meta').textContent =
     [item.ext?.toUpperCase(), fmt(item.size), fmtDate(item.createdAt)].filter(Boolean).join(' · ');
-  document.getElementById('viewer-star-btn').innerHTML =
-    (item.starred ? '★' : '⭐') + ' <span>' + (item.starred ? 'Starred' : 'Star') + '</span>';
+  const lbl = (item.starred ? '★ Starred' : '⭐ Star');
+  ['viewer-star-btn','viewer-star-btn2'].forEach(bid=>{const b=document.getElementById(bid);if(b)b.textContent=lbl;});
 
   // Nav buttons
   document.getElementById('vw-prev').disabled = viewer.sibIdx <= 0;
@@ -1604,7 +1628,7 @@ function renderViewer(id) {
 function renderImageViewer(item, body, src) {
   document.getElementById('zoom-ctrl').style.display = 'flex';
   const img = document.createElement('img');
-  img.id = 'vw-image';
+  img.id = 'vw-img';
   img.alt = item.name;
   img.style.maxWidth = '100%'; img.style.maxHeight = '100%'; img.style.objectFit = 'contain';
   img.style.borderRadius = '6px'; img.style.boxShadow = '0 20px 60px rgba(0,0,0,0.6)';
@@ -1639,7 +1663,6 @@ function renderImageViewer(item, body, src) {
     img.style.cursor = viewer.zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
   };
   body.appendChild(img);
-  document.getElementById('vw-img') || (body._img = img);
 }
 
 // ---- PDF ----
@@ -1660,15 +1683,15 @@ function renderVideoViewer(item, body, src) {
   wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:20px';
   if (src) {
     const vid = document.createElement('video');
-    vid.id = 'vw-video'; vid.controls = true; vid.autoplay = false;
+    vid.id = 'vw-vid'; vid.controls = true; vid.autoplay = false;
     vid.style.cssText = 'max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,0.6);outline:none';
     vid.src = src;
     wrap.appendChild(vid);
   } else {
     wrap.innerHTML = `<div id="vw-unsupported" style="text-align:center">
-      <div class="unsup-icon">🎬</div>
-      <div class="unsup-title" style="font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin:12px 0 8px">${esc(item.name)}</div>
-      <div class="unsup-sub" style="font-size:13px;color:var(--txt3);max-width:280px;margin:0 auto;line-height:1.6">Upload the actual video file to play it here.</div>
+      <div class="vw-unsup-ic">🎬</div>
+      <div class="vw-unsup-tt" style="font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin:12px 0 8px">${esc(item.name)}</div>
+      <div class="vw-unsup-st" style="font-size:13px;color:var(--txt3);max-width:280px;margin:0 auto;line-height:1.6">Upload the actual video file to play it here.</div>
       <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
         <button class="va-btn" onclick="showUploadModal()">⬆ Upload File</button>
       </div>
@@ -1680,7 +1703,7 @@ function renderVideoViewer(item, body, src) {
 // ---- Audio ----
 function renderAudioViewer(item, body, src) {
   const wrap = document.createElement('div');
-  wrap.id = 'vw-audio-wrap';
+  wrap.id = 'vw-aud-wrap';
   wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:40px;width:100%';
   const artColors = [['#4f8ef7','#7c5bf0'],['#f75f8e','#f0c142'],['#3dd68c','#4f8ef7'],['#fb923c','#f75f8e']];
   const ac = artColors[Math.abs((item.id.charCodeAt(3)||0))%artColors.length];
@@ -1705,13 +1728,13 @@ function renderTextViewer(item, body, src) {
       const b64 = src.split(',')[1];
       const text = decodeURIComponent(escape(atob(b64)));
       const pre = document.createElement('pre');
-      pre.id = 'vw-text'; pre.textContent = text;
+      pre.id = 'vw-txt'; pre.textContent = text;
       body.appendChild(pre);
     } catch(e) { renderUnsupported(item, body); }
   } else {
     // Show placeholder with simulated content
     const pre = document.createElement('pre');
-    pre.id = 'vw-text';
+    pre.id = 'vw-txt';
     const samples = {
       doc: `Document: ${item.name}\n${'─'.repeat(40)}\n\nThis is a preview placeholder.\nUpload the actual file to see its contents here.\n\nFile size: ${fmt(item.size)}\nCreated: ${new Date(item.createdAt).toLocaleString('en-GB')}`,
       csv: `Name,Value,Date\nSample,100,${new Date().toLocaleDateString('en-GB')}\nExample,200,${new Date().toLocaleDateString('en-GB')}\n\n(Upload the actual CSV to view real data)`,
@@ -1748,12 +1771,12 @@ function renderStrip(activeId) {
     const ti = typeInfo(s);
     const isActive = sid === activeId;
     const hasImg = s._dataUrl && s.ext === 'image';
-    return `<div class="sth${isActive?' active':''} ft-${ti.cls} bg-${ti.cls}" onclick="stripOpen('${sid}')" title="${esc(s.name)}">
+    return `<div class="sth${isActive?' on':''} tc-${ti.cls} bg-${ti.cls}" onclick="stripOpen('${sid}')" title="${esc(s.name)}">
       ${hasImg ? `<img src="${s._dataUrl}" alt="">` : ti.emoji}
     </div>`;
   }).join('');
   // Scroll active into view
-  const activeDot = strip.querySelector('.active');
+  const activeDot = strip.querySelector('.on');
   if (activeDot) activeDot.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
 }
 
@@ -1770,7 +1793,7 @@ function zoom(delta) {
   applyZoom();
 }
 function applyZoom() {
-  const img = document.getElementById('vw-img') || document.querySelector('#viewer-body img');
+  const img = document.getElementById('vw-img') || document.querySelector('#vwr-body img');
   if (img) img.style.transform = `scale(${viewer.zoomLevel})`;
   document.getElementById('zoom-pct').textContent = Math.round(viewer.zoomLevel*100) + '%';
 }
@@ -1827,10 +1850,11 @@ function renderTransferStep() {
   for (let i = 1; i <= 3; i++) {
     const c = document.getElementById('tstep-'+i);
     const l = document.getElementById('tline-'+i);
-    c.classList.remove('active','done');
+    if (!c) continue;
+    c.classList.remove('cur','done');
     if (l) l.classList.remove('done');
     if (i < transfer.step) { c.classList.add('done'); c.textContent='✓'; if(l) l.classList.add('done'); }
-    else if (i === transfer.step) { c.classList.add('on'); c.textContent=i; }
+    else if (i === transfer.step) { c.classList.add('cur'); c.textContent=i; }
     else c.textContent = i;
   }
 
@@ -1848,16 +1872,16 @@ function renderTransferStep() {
       <div style="margin-bottom:16px">
         <div class="f-lbl" style="margin-bottom:10px">What to transfer</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <label style="display:flex;align-items:center;gap:7px;padding:8px 13px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surf2);font-size:13px;transition:all 0.15s" id="scope-all-lbl">
+          <label style="display:flex;align-items:center;gap:7px;padding:8px 13px;border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;background:var(--surf2);font-size:13px;transition:all 0.15s" id="scope-all-lbl">
             <input type="radio" name="t-scope" value="all" ${transfer.scope==='all'?'checked':''} onchange="transfer.scope=this.value;updateScopeStyle()" style="accent-color:var(--accent)"> All files (${allCount} items, ${totalSz})
           </label>
-          ${selCount>0?`<label style="display:flex;align-items:center;gap:7px;padding:8px 13px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surf2);font-size:13px;transition:all 0.15s" id="scope-sel-lbl">
+          ${selCount>0?`<label style="display:flex;align-items:center;gap:7px;padding:8px 13px;border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;background:var(--surf2);font-size:13px;transition:all 0.15s" id="scope-sel-lbl">
             <input type="radio" name="t-scope" value="selected" ${transfer.scope==='selected'?'checked':''} onchange="transfer.scope=this.value;updateScopeStyle()" style="accent-color:var(--accent)"> Selected only (${selCount} items)
           </label>`:''}
         </div>
       </div>
       <div class="f-lbl" style="margin-bottom:10px">Transfer method</div>
-      <div class="method-grid">
+      <div class="tr-grid">
         <div class="tr-card" onclick="selectTransferMethod('qr',this)" id="tm-qr" style="--mc1:#4f8ef7;--mc2:#7c5bf0">
           <span class="tr-bg bg-easy">Easy</span>
           <span class="tr-ic">📷</span>
@@ -1890,16 +1914,15 @@ function renderTransferStep() {
           ${transfer.history.slice(-3).reverse().map(h=>`
             <div class="th-it">
               <div class="th-ic">${h.method==='qr'?'📷':h.method==='export'?'💾':h.method==='nearby'?'📡':'☁️'}</div>
-              <div class="th-info"><div class="th-nm">${h.method==='export'?'Exported backup':h.method==='qr'?'QR transfer':'Cloud sync'}</div><div class="th-mt">${h.count} items · ${fmtDate(h.ts)}</div></div>
-              <span class="th-badge ${h.dir==='sent'?'th-sent':'th-recv'}">${h.dir==='sent'?'Sent':'Received'}</span>
+              <div style="flex:1"><div class="th-nm">${h.method==='export'?'Exported backup':h.method==='qr'?'QR transfer':'Cloud sync'}</div><div class="th-mt">${h.count} items · ${fmtDate(h.ts)}</div></div>
+              <span class="th-bg ${h.dir==='sent'?'th-sent':'th-recv'}">${h.dir==='sent'?'Sent':'Received'}</span>
             </div>`).join('')}
         </div>
       </div>`:''}
     `;
-    // Highlight pre-selected
     if (transfer.method) {
       const el = document.getElementById('tm-'+transfer.method);
-      if (el) el.classList.add('selected');
+      if (el) el.classList.add('on');
     }
 
   } else if (transfer.step === 2) {
@@ -1918,14 +1941,14 @@ function updateScopeStyle() {
     const lbl = document.getElementById('scope-'+s+'-lbl');
     if (!lbl) return;
     const inp = lbl.querySelector('input');
-    lbl.style.borderColor = inp?.checked ? 'var(--accent)' : 'var(--border)';
+    lbl.style.borderColor = inp?.checked ? 'var(--accent)' : 'var(--bdr)';
   });
 }
 
 function selectTransferMethod(method, el) {
   transfer.method = method;
-  document.querySelectorAll('.tr-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
+  document.querySelectorAll('.tr-card').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
 }
 
 function transferNext() {
@@ -1975,7 +1998,7 @@ function renderQRStep(body) {
         <div style="font-size:13px;color:var(--txt2);margin-bottom:4px">Transfer <strong style="color:var(--txt)">${items.length} item${items.length!==1?'s':''}</strong> to another device</div>
         <div style="font-size:11px;color:var(--txt3)">File content transfers separately — see instructions below</div>
       </div>
-      <canvas id="qr-canvas" width="220" height="220"></canvas>
+      <canvas id="qr-cvs" width="220" height="220"></canvas>
       <div class="qr-ins">
         <div class="qr-st"><div class="qr-sn">1</div> Open FileVault on the other device</div>
         <div class="qr-st"><div class="qr-sn">2</div> Tap <strong>📲 Transfer → Receive</strong> in the sidebar</div>
@@ -1989,7 +2012,7 @@ function renderQRStep(body) {
     </div>`;
 
   // Draw QR code using canvas (built-in mini QR generator)
-  setTimeout(() => drawQR('qr-canvas', qrData), 50);
+  setTimeout(() => drawQR('qr-cvs', qrData), 50);
 
   // Log history
   logTransfer('qr', 'sent', items.length);
@@ -2016,7 +2039,7 @@ function renderExportStep(body) {
     <div class="export-options">
       <div class="ex-opt" onclick="doExportAs('full')">
         <div class="ex-oi">🗃️</div>
-        <div class="export-opt-info">
+        <div style="flex:1">
           <div class="ex-on">Full Backup (.fvault)</div>
           <div class="ex-od">Everything — folder structure, file metadata, and all uploaded file content. Import this on any device to restore completely.</div>
         </div>
@@ -2024,7 +2047,7 @@ function renderExportStep(body) {
       </div>
       <div class="ex-opt" onclick="doExportAs('meta')">
         <div class="ex-oi">📋</div>
-        <div class="export-opt-info">
+        <div style="flex:1">
           <div class="ex-on">Structure Only (.fvault)</div>
           <div class="ex-od">Folder tree and file names only — no file content. Small file, quick transfer.</div>
         </div>
@@ -2032,7 +2055,7 @@ function renderExportStep(body) {
       </div>
       <div class="ex-opt" onclick="doExportAs('json')">
         <div class="ex-oi">📄</div>
-        <div class="export-opt-info">
+        <div style="flex:1">
           <div class="ex-on">JSON Export (.json)</div>
           <div class="ex-od">Machine-readable format for developers or third-party tools.</div>
         </div>
@@ -2094,7 +2117,7 @@ function renderNearbyStep(body) {
     document.getElementById('transfer-subtitle').textContent = devices.length+' device(s) found';
     body.innerHTML = `
       <div class="f-lbl" style="margin-bottom:10px">Select device to send to</div>
-      <div class="nearby-list">
+      <div class="nb-list">
         ${devices.map((d,i)=>`
           <div class="nb-dev" onclick="sendToNearby(this,'${d.name}')">
             <div class="nb-ic">${d.type}</div>
@@ -2114,7 +2137,7 @@ function renderNearbyStep(body) {
 }
 
 function sendToNearby(el, deviceName) {
-  document.querySelectorAll('.nearby-device').forEach(d=>d.style.borderColor='var(--border)');
+  document.querySelectorAll('.nb-dev').forEach(d=>d.style.borderColor='var(--bdr)');
   el.style.borderColor = 'var(--accent)';
   const items = getTransferItems();
   toast('📡 Connecting to '+deviceName+'…');
@@ -2135,7 +2158,7 @@ function sendToNearby(el, deviceName) {
         </div>
         <div style="font-size:13.5px;font-weight:600">Sending to ${deviceName}</div>
         <div class="pf-list" id="prog-flist">
-          ${items.slice(0,6).map(i=>`<div class="pf-it"><span style="font-size:14px">${typeInfo(i).emoji}</span><div class="pf-nm">${esc(i.name)}</div><div class="prog-file-status" id="pfs-${i.id}">⏳</div></div>`).join('')}
+          ${items.slice(0,6).map(i=>`<div class="pf-it"><span style="font-size:14px">${typeInfo(i).emoji}</span><div class="pf-nm">${esc(i.name)}</div><div style="font-size:14px" id="pfs-${i.id}">⏳</div></div>`).join('')}
         </div>
       </div>`;
 
@@ -2175,10 +2198,10 @@ function renderCloudStep(body) {
       Export your FileVault backup to a cloud service, then import it on any device by opening the file in a browser.
     </div>
     <div class="export-options">
-      <div class="ex-opt" onclick="cloudExport('gdrive')"><div class="ex-oi">🟢</div><div class="export-opt-info"><div class="ex-on">Google Drive</div><div class="ex-od">Save backup to Drive, access from any device</div></div><div class="ex-ar">→</div></div>
-      <div class="ex-opt" onclick="cloudExport('icloud')"><div class="ex-oi">☁️</div><div class="export-opt-info"><div class="ex-on">iCloud Drive</div><div class="ex-od">Sync across Apple devices automatically</div></div><div class="ex-ar">→</div></div>
-      <div class="ex-opt" onclick="cloudExport('dropbox')"><div class="ex-oi">📦</div><div class="export-opt-info"><div class="ex-on">Dropbox</div><div class="ex-od">Save to Dropbox folder for cross-device access</div></div><div class="ex-ar">→</div></div>
-      <div class="ex-opt" onclick="cloudExport('onedrive')"><div class="ex-oi">🟦</div><div class="export-opt-info"><div class="ex-on">OneDrive</div><div class="ex-od">Microsoft cloud for Windows & Office users</div></div><div class="ex-ar">→</div></div>
+      <div class="ex-opt" onclick="cloudExport('gdrive')"><div class="ex-oi">🟢</div><div style="flex:1"><div class="ex-on">Google Drive</div><div class="ex-od">Save backup to Drive, access from any device</div></div><div class="ex-ar">→</div></div>
+      <div class="ex-opt" onclick="cloudExport('icloud')"><div class="ex-oi">☁️</div><div style="flex:1"><div class="ex-on">iCloud Drive</div><div class="ex-od">Sync across Apple devices automatically</div></div><div class="ex-ar">→</div></div>
+      <div class="ex-opt" onclick="cloudExport('dropbox')"><div class="ex-oi">📦</div><div style="flex:1"><div class="ex-on">Dropbox</div><div class="ex-od">Save to Dropbox folder for cross-device access</div></div><div class="ex-ar">→</div></div>
+      <div class="ex-opt" onclick="cloudExport('onedrive')"><div class="ex-oi">🟦</div><div style="flex:1"><div class="ex-on">OneDrive</div><div class="ex-od">Microsoft cloud for Windows & Office users</div></div><div class="ex-ar">→</div></div>
     </div>
     <div style="margin-top:14px">
       <div class="f-lbl" style="margin-bottom:10px">Or import existing backup</div>
@@ -2233,7 +2256,7 @@ function showReceiveMode() {
     document.getElementById('transfer-subtitle').textContent = 'Restore from a .fvault file';
     document.getElementById('transfer-next-btn').style.display='none';
     body.innerHTML = `
-      <div class="rv-zone" onclick="triggerImportInput()" style="margin-bottom:16px" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondrop="handleImportDrop(event)" ondragleave="this.style.borderColor='var(--border2)'">
+      <div class="rv-zone" onclick="triggerImportInput()" style="margin-bottom:16px" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondrop="handleImportDrop(event)" ondragleave="this.style.borderColor='var(--bdr2)'">
         <div style="font-size:36px;margin-bottom:10px">📥</div>
         <div style="font-size:14px;font-weight:600;margin-bottom:6px">Drop .fvault file here or tap to browse</div>
         <div style="font-size:12px;color:var(--txt3)">Accepts .fvault and .json backup files</div>
@@ -2247,7 +2270,7 @@ function showReceiveMode() {
 
 function handleImportDrop(e) {
   e.preventDefault();
-  e.currentTarget.style.borderColor='var(--border2)';
+  e.currentTarget.style.borderColor='var(--bdr2)';
   const file = e.dataTransfer.files[0];
   if (file) importBackupFile(file);
 }
@@ -2335,7 +2358,7 @@ function drawQR(canvasId, text) {
   ctx.fillText('🗂', size/2, size/2+1);
 }
 
-function regenerateQR() { drawQR('qr-canvas', 'filevault://import?refresh='+Date.now()); }
+function regenerateQR() { drawQR('qr-cvs', 'filevault://import?refresh='+Date.now()); }
 
 function downloadQRImage() {
   const canvas = document.getElementById('qr-cvs');
@@ -2369,6 +2392,8 @@ function doExport() { renderExportStep(document.getElementById('transfer-body'))
 function mobileNav(nav, el) {
   document.querySelectorAll('.m-nav-it').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
+  // Home always resets folder path so user goes back to root
+  if (nav === 'home') state.currentPath = [];
   navigate(nav);
 }
 
@@ -2401,10 +2426,10 @@ function closeFabMenu() {
 function navigate(nav, sub) {
   state.currentNav = nav;
   if (sub) state.ctxSub = sub;
-  state.currentPath = [];
+  state.currentPath = [];  // always reset folder path on nav change
   state.selectedIds.clear();
   state.searchQuery = '';
-  document.getElementById('search-inp').value = '';
+  const si = document.getElementById('search-inp'); if(si) si.value = '';
   // Sync desktop sidebar
   document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('on'));
   const map = { home:'nav-home', recents:'nav-recents', starred:'nav-starred', shared:'nav-shared' };
@@ -2439,7 +2464,7 @@ document.addEventListener('touchend', e => {
 
 // Close modals on back button (Android)
 window.addEventListener('popstate', () => {
-  const openModal = document.querySelector('.overlay.show');
+  const openModal = document.querySelector('.overlay.on');
   if (openModal) { openModal.classList.remove('on'); history.pushState(null,''); return; }
   const viewer = document.getElementById('vwr');
   if (viewer.classList.contains('on')) { closeViewer(); history.pushState(null,''); return; }
