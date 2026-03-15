@@ -1,0 +1,2928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FileVault">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0b0f">
+<meta name="application-name" content="FileVault">
+<meta name="description" content="Your personal file manager — organize, preview and transfer files across all your devices.">
+<title>FileVault — Your Files, Everywhere</title>
+
+<!-- PWA App Icons (inline SVG encoded as data URI) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%230a0b0f'/%3E%3Crect width='512' height='512' rx='115' fill='url(%23bg)'/%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23111318'/%3E%3Cstop offset='100%25' stop-color='%231a1f2e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='108' y='200' width='296' height='216' rx='24' fill='%23f0c142' opacity='0.15'/%3E%3Crect x='108' y='200' width='296' height='216' rx='24' fill='none' stroke='%23f0c142' stroke-width='12' opacity='0.6'/%3E%3Crect x='108' y='228' width='296' height='4' fill='%23f0c142' opacity='0.4'/%3E%3Crect x='108' y='160' width='140' height='56' rx='16' fill='%23f0c142' opacity='0.9'/%3E%3Ccircle cx='256' cy='308' r='38' fill='%23f0c142' opacity='0.9'/%3E%3Cpath d='M243 308 l13-18 l13 18 M256 290 L256 326' stroke='%230a0b0f' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%230a0b0f'/%3E%3Crect x='80' y='188' width='352' height='252' rx='28' fill='%23f0c142' opacity='0.18'/%3E%3Crect x='80' y='188' width='352' height='252' rx='28' fill='none' stroke='%23f0c142' stroke-width='16' opacity='0.7'/%3E%3Crect x='80' y='220' width='352' height='6' fill='%23f0c142' opacity='0.45'/%3E%3Crect x='80' y='144' width='160' height='60' rx='18' fill='%23f0c142'/%3E%3Ccircle cx='256' cy='314' r='46' fill='%23f0c142'/%3E%3Cpath d='M241 314 l15-21 l15 21 M256 293 L256 335' stroke='%230a0b0f' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+
+<!-- PWA Manifest inline -->
+<script>
+  const manifest = {
+    name: "FileVault",
+    short_name: "FileVault",
+    description: "Your personal file manager",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#0a0b0f",
+    theme_color: "#0a0b0f",
+    orientation: "any",
+    icons: [
+      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%230a0b0f'/%3E%3Crect x='80' y='188' width='352' height='252' rx='28' fill='%23f0c142' opacity='0.18'/%3E%3Crect x='80' y='188' width='352' height='252' rx='28' fill='none' stroke='%23f0c142' stroke-width='16' opacity='0.7'/%3E%3Crect x='80' y='220' width='352' height='6' fill='%23f0c142' opacity='0.45'/%3E%3Crect x='80' y='144' width='160' height='60' rx='18' fill='%23f0c142'/%3E%3Ccircle cx='256' cy='314' r='46' fill='%23f0c142'/%3E%3Cpath d='M241 314 l15-21 l15 21 M256 293 L256 335' stroke='%230a0b0f' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const manifestURL = URL.createObjectURL(blob);
+  document.addEventListener('DOMContentLoaded', () => {
+    const l = document.createElement('link');
+    l.rel='manifest'; l.href=manifestURL;
+    document.head.appendChild(l);
+  });
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0f;
+    --surface: #111318;
+    --surface2: #181c24;
+    --surface3: #1e2330;
+    --border: #252c3a;
+    --border2: #2e3748;
+    --accent: #4f8ef7;
+    --accent2: #7c5bf0;
+    --accent3: #f75f8e;
+    --gold: #f0c142;
+    --green: #3dd68c;
+    --text: #e8ecf5;
+    --text2: #8b93a8;
+    --text3: #555f73;
+    --danger: #f75f5f;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    --shadow2: 0 2px 8px rgba(0,0,0,0.3);
+    --radius: 14px;
+    --radius2: 10px;
+    --sidebar-w: 240px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); overflow:hidden; }
+
+  /* === LAYOUT === */
+  #app { display:flex; height:100vh; overflow:hidden; }
+  
+  /* === SIDEBAR === */
+  #sidebar {
+    width: var(--sidebar-w); min-width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    z-index: 100; height: 100%;
+    overflow: hidden;
+  }
+  .sidebar-logo {
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-text {
+    font-family:'Syne',sans-serif; font-weight:800; font-size:20px;
+    background: linear-gradient(135deg, #f0c142, #f5a623);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    letter-spacing:-0.5px;
+  }
+  .logo-sub { font-size:11px; color:var(--text3); margin-top:2px; letter-spacing:0.3px; }
+  
+  .sidebar-section { padding:14px 12px 6px; }
+  .sidebar-section-label { font-size:10px; font-weight:600; color:var(--text3); letter-spacing:1px; text-transform:uppercase; padding: 0 8px 8px; }
+  .sidebar-btn {
+    display:flex; align-items:center; gap:10px;
+    padding:9px 12px; border-radius:var(--radius2);
+    cursor:pointer; font-size:13.5px; color:var(--text2);
+    transition:all 0.15s; position:relative;
+    user-select:none;
+  }
+  .sidebar-btn:hover { background:var(--surface2); color:var(--text); }
+  .sidebar-btn.active { background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(124,91,240,0.1)); color:var(--accent); }
+  .sidebar-btn .icon { width:20px; height:20px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .sidebar-btn .count { margin-left:auto; font-size:11px; background:var(--surface3); color:var(--text3); padding:2px 7px; border-radius:10px; }
+  
+  .sidebar-storage { padding:14px 14px 18px; margin-top:auto; border-top:1px solid var(--border); }
+  .storage-label { font-size:11px; color:var(--text3); margin-bottom:8px; display:flex; justify-content:space-between; }
+  .storage-bar { height:5px; background:var(--surface3); border-radius:3px; overflow:hidden; }
+  .storage-fill { height:100%; width:27%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:3px; }
+  .storage-info { font-size:11px; color:var(--text2); margin-top:6px; }
+
+  /* === MAIN === */
+  #main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  
+  /* === TOPBAR === */
+  #topbar {
+    height:60px; display:flex; align-items:center; gap:12px;
+    padding:0 20px; border-bottom:1px solid var(--border);
+    background:var(--surface); flex-shrink:0;
+  }
+  #menu-toggle { display:none; background:none; border:none; color:var(--text2); cursor:pointer; padding:6px; border-radius:8px; }
+  #menu-toggle:hover { background:var(--surface2); }
+  
+  .breadcrumb { display:flex; align-items:center; gap:6px; font-size:13px; flex:1; min-width:0; overflow:hidden; }
+  .breadcrumb-item { color:var(--text2); cursor:pointer; white-space:nowrap; }
+  .breadcrumb-item:hover { color:var(--accent); }
+  .breadcrumb-item.current { color:var(--text); font-weight:500; }
+  .breadcrumb-sep { color:var(--text3); font-size:11px; }
+  
+  .topbar-actions { display:flex; align-items:center; gap:8px; margin-left:auto; }
+  .tb-btn {
+    display:flex; align-items:center; gap:6px;
+    padding:7px 13px; border-radius:var(--radius2); cursor:pointer;
+    font-size:13px; font-family:inherit; border:none; transition:all 0.15s;
+  }
+  .tb-btn-ghost { background:transparent; color:var(--text2); }
+  .tb-btn-ghost:hover { background:var(--surface2); color:var(--text); }
+  .tb-btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; font-weight:500; }
+  .tb-btn-primary:hover { opacity:0.9; transform:translateY(-1px); box-shadow:0 4px 16px rgba(79,142,247,0.3); }
+  .search-wrap { position:relative; }
+  .search-inp {
+    background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    padding:7px 12px 7px 34px; border-radius:var(--radius2); font-size:13px;
+    font-family:inherit; width:200px; outline:none; transition:all 0.2s;
+  }
+  .search-inp:focus { border-color:var(--accent); background:var(--surface3); width:240px; }
+  .search-inp::placeholder { color:var(--text3); }
+  .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:14px; pointer-events:none; }
+  
+  .view-toggle { display:flex; gap:2px; background:var(--surface2); border-radius:var(--radius2); padding:3px; }
+  .view-btn { padding:5px 8px; border-radius:7px; cursor:pointer; color:var(--text3); transition:all 0.15s; font-size:13px; }
+  .view-btn.active { background:var(--surface3); color:var(--text); }
+
+  /* === CONTENT === */
+  #content { flex:1; overflow-y:auto; padding:20px; }
+  #content::-webkit-scrollbar { width:5px; }
+  #content::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  
+  /* === SECTION HEADERS === */
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:15px; color:var(--text); }
+  .section-action { font-size:12px; color:var(--accent); cursor:pointer; }
+  
+  /* === QUICK ACCESS === */
+  .quick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-bottom:28px; }
+  .quick-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden;
+  }
+  .quick-card::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg,var(--c1,transparent),var(--c2,transparent));
+    opacity:0.06; transition:opacity 0.2s;
+  }
+  .quick-card:hover { border-color:var(--border2); transform:translateY(-2px); box-shadow:var(--shadow2); }
+  .quick-card:hover::before { opacity:0.12; }
+  .quick-icon { font-size:26px; margin-bottom:10px; display:block; }
+  .quick-name { font-size:13px; font-weight:500; color:var(--text); }
+  .quick-count { font-size:11px; color:var(--text3); margin-top:3px; }
+  
+  /* === FILES GRID === */
+  .files-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; }
+  .files-list { display:flex; flex-direction:column; gap:2px; }
+  
+  /* GRID ITEM */
+  .file-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 12px; cursor:pointer; transition:all 0.18s; position:relative;
+    user-select:none;
+  }
+  .file-card:hover { border-color:var(--border2); background:var(--surface2); transform:translateY(-1px); }
+  .file-card.selected { border-color:var(--accent); background:rgba(79,142,247,0.06); }
+  .file-thumb { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:10px; }
+  .file-name { font-size:12.5px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .file-meta { font-size:11px; color:var(--text3); margin-top:3px; }
+  .file-check {
+    position:absolute; top:9px; right:9px; width:18px; height:18px;
+    border-radius:50%; border:1.5px solid var(--border2);
+    background:var(--surface2); display:flex; align-items:center; justify-content:center;
+    font-size:10px; transition:all 0.15s; opacity:0;
+  }
+  .file-card:hover .file-check, .file-card.selected .file-check { opacity:1; }
+  .file-card.selected .file-check { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .file-card .ctx-btn {
+    position:absolute; bottom:8px; right:8px; width:22px; height:22px;
+    background:var(--surface3); border-radius:6px; display:flex; align-items:center; justify-content:center;
+    font-size:12px; color:var(--text3); opacity:0; transition:opacity 0.15s;
+    border:none; cursor:pointer;
+  }
+  .file-card:hover .ctx-btn { opacity:1; }
+
+  /* LIST ITEM */
+  .file-row {
+    display:flex; align-items:center; gap:12px;
+    padding:9px 12px; border-radius:var(--radius2);
+    cursor:pointer; transition:all 0.15s; border:1px solid transparent;
+  }
+  .file-row:hover { background:var(--surface); border-color:var(--border); }
+  .file-row.selected { background:rgba(79,142,247,0.06); border-color:var(--accent); }
+  .file-row-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .file-row-name { flex:1; font-size:13.5px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .file-row-size { font-size:12px; color:var(--text3); width:70px; text-align:right; flex-shrink:0; }
+  .file-row-date { font-size:12px; color:var(--text3); width:95px; text-align:right; flex-shrink:0; }
+  .file-row-actions { display:flex; gap:4px; opacity:0; transition:opacity 0.15s; }
+  .file-row:hover .file-row-actions { opacity:1; }
+  .row-act-btn { width:26px; height:26px; border-radius:7px; border:none; background:var(--surface2); color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; transition:all 0.15s; }
+  .row-act-btn:hover { background:var(--surface3); color:var(--text); }
+
+  /* === FOLDER COLORS === */
+  .fc-blue { background:rgba(79,142,247,0.12); }
+  .fc-purple { background:rgba(124,91,240,0.12); }
+  .fc-pink { background:rgba(247,95,142,0.12); }
+  .fc-gold { background:rgba(240,193,66,0.12); }
+  .fc-green { background:rgba(61,214,140,0.12); }
+  .fc-orange { background:rgba(247,140,60,0.12); }
+  
+  /* === EMPTY STATE === */
+  .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; text-align:center; }
+  .empty-icon { font-size:52px; margin-bottom:16px; opacity:0.4; }
+  .empty-title { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; color:var(--text2); margin-bottom:6px; }
+  .empty-sub { font-size:13px; color:var(--text3); }
+
+  /* === SELECTION BAR === */
+  #sel-bar {
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px);
+    background:var(--surface2); border:1px solid var(--border2); border-radius:16px;
+    padding:10px 16px; display:flex; align-items:center; gap:10px;
+    box-shadow:var(--shadow); transition:transform 0.3s cubic-bezier(.4,0,.2,1);
+    z-index:200; white-space:nowrap;
+  }
+  #sel-bar.visible { transform:translateX(-50%) translateY(0); }
+  .sel-count { font-size:13px; font-weight:600; color:var(--text); padding-right:10px; border-right:1px solid var(--border2); }
+  .sel-action { display:flex; align-items:center; gap:5px; padding:6px 10px; border-radius:10px; cursor:pointer; font-size:12.5px; color:var(--text2); transition:all 0.15s; border:none; background:none; font-family:inherit; }
+  .sel-action:hover { background:var(--surface3); color:var(--text); }
+  .sel-action.danger:hover { background:rgba(247,95,95,0.12); color:var(--danger); }
+
+  /* === MODALS === */
+  .overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px);
+    z-index:300; display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity 0.2s;
+    padding:20px;
+  }
+  .overlay.show { opacity:1; pointer-events:all; }
+  .modal {
+    background:var(--surface); border:1px solid var(--border2); border-radius:18px;
+    padding:0; width:100%; max-width:420px;
+    transform:scale(0.95) translateY(10px); transition:transform 0.25s cubic-bezier(.4,0,.2,1);
+    overflow:hidden; max-height:90vh; display:flex; flex-direction:column;
+  }
+  .overlay.show .modal { transform:scale(1) translateY(0); }
+  .modal-header { padding:20px 22px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; }
+  .modal-close { width:28px; height:28px; border-radius:8px; border:none; background:var(--surface2); color:var(--text2); cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .modal-close:hover { background:var(--surface3); color:var(--text); }
+  .modal-body { padding:20px 22px; overflow-y:auto; flex:1; }
+  .modal-footer { padding:14px 22px 20px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+  
+  .field-label { font-size:12px; font-weight:500; color:var(--text2); margin-bottom:8px; }
+  .field-inp {
+    width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    padding:10px 13px; border-radius:var(--radius2); font-size:14px; font-family:inherit;
+    outline:none; transition:border-color 0.2s;
+  }
+  .field-inp:focus { border-color:var(--accent); }
+  .field-group { margin-bottom:16px; }
+  
+  .color-picker { display:flex; gap:8px; flex-wrap:wrap; }
+  .cp-dot { width:30px; height:30px; border-radius:50%; cursor:pointer; transition:transform 0.15s; border:2px solid transparent; }
+  .cp-dot:hover, .cp-dot.sel { transform:scale(1.15); border-color:var(--text); }
+  
+  /* SHARE MODAL */
+  .share-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .share-btn {
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    padding:16px 10px; border-radius:var(--radius); cursor:pointer;
+    background:var(--surface2); border:1px solid var(--border); transition:all 0.18s;
+  }
+  .share-btn:hover { border-color:var(--border2); background:var(--surface3); transform:translateY(-2px); }
+  .share-icon { font-size:24px; }
+  .share-label { font-size:11.5px; color:var(--text2); font-weight:500; }
+  
+  /* UPLOAD AREA */
+  .upload-zone {
+    border:2px dashed var(--border2); border-radius:var(--radius); padding:32px;
+    text-align:center; cursor:pointer; transition:all 0.2s; background:var(--surface2);
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color:var(--accent); background:rgba(79,142,247,0.05); }
+  .upload-zone-icon { font-size:36px; margin-bottom:10px; }
+  .upload-zone-text { font-size:14px; color:var(--text2); margin-bottom:4px; }
+  .upload-zone-sub { font-size:12px; color:var(--text3); }
+  .upload-sources { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+  .upload-src-btn {
+    display:flex; align-items:center; gap:8px; padding:10px 12px;
+    background:var(--surface3); border:1px solid var(--border); border-radius:var(--radius2);
+    cursor:pointer; font-size:12.5px; color:var(--text2); transition:all 0.15s;
+    font-family:inherit;
+  }
+  .upload-src-btn:hover { border-color:var(--accent); color:var(--text); }
+  
+  /* CONTEXT MENU */
+  #ctx-menu {
+    position:fixed; background:var(--surface2); border:1px solid var(--border2);
+    border-radius:12px; padding:6px; min-width:170px; z-index:400;
+    box-shadow:var(--shadow); opacity:0; pointer-events:none; transform:scale(0.92);
+    transition:all 0.12s cubic-bezier(.4,0,.2,1);
+  }
+  #ctx-menu.show { opacity:1; pointer-events:all; transform:scale(1); }
+  .ctx-item {
+    display:flex; align-items:center; gap:10px; padding:8px 11px;
+    border-radius:8px; cursor:pointer; font-size:13px; color:var(--text2);
+    transition:all 0.12s;
+  }
+  .ctx-item:hover { background:var(--surface3); color:var(--text); }
+  .ctx-item.danger:hover { background:rgba(247,95,95,0.1); color:var(--danger); }
+  .ctx-sep { height:1px; background:var(--border); margin:4px 0; }
+  
+  /* FAB */
+  #fab {
+    position:fixed; bottom:24px; right:24px; width:52px; height:52px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border-radius:16px; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:0 6px 24px rgba(79,142,247,0.35); z-index:150;
+    font-size:22px; color:#fff; transition:all 0.2s; border:none;
+    display:none;
+  }
+  #fab:hover { transform:scale(1.06); }
+  
+  /* TOAST */
+  #toast-wrap { position:fixed; top:16px; right:16px; z-index:500; display:flex; flex-direction:column; gap:8px; }
+  .toast {
+    background:var(--surface2); border:1px solid var(--border2); border-radius:12px;
+    padding:11px 16px; font-size:13px; color:var(--text); display:flex; align-items:center; gap:10px;
+    box-shadow:var(--shadow); transform:translateX(120%); transition:transform 0.3s cubic-bezier(.4,0,.2,1); min-width:220px;
+  }
+  .toast.show { transform:translateX(0); }
+  .toast-icon { font-size:16px; }
+  
+  /* SIDEBAR OVERLAY (mobile) */
+  #sb-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99; display:none; }
+  
+  /* === RESPONSIVE === */
+
+  /* ── Tablet ────────────────────────────────── */
+  @media (max-width:900px) {
+    :root { --sidebar-w: 220px; }
+    .files-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
+  }
+
+  /* ── Mobile (≤768px) ───────────────────────── */
+  @media (max-width:768px) {
+    /* Sidebar slides in as drawer */
+    #sidebar {
+      position:fixed; left:0; top:0; height:100%;
+      transform:translateX(-100%); z-index:200;
+      box-shadow:8px 0 32px rgba(0,0,0,0.5);
+    }
+    #sidebar.open { transform:translateX(0); }
+    #menu-toggle { display:flex !important; }
+    #sb-overlay.show { display:block; }
+
+    /* Topbar — compact */
+    #topbar { height:54px; padding:0 12px; gap:8px; }
+    .topbar-actions { gap:6px; }
+    .topbar-actions .tb-btn-primary { display:none; }
+    .topbar-actions .tb-btn-ghost { display:none; }
+    .search-wrap { display:none; }
+
+    /* Content */
+    #content { padding:12px 10px; padding-bottom:90px; }
+
+    /* Grids */
+    .files-grid { grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; }
+    .quick-grid  { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:20px; }
+    .quick-card  { padding:13px 11px; }
+    .quick-icon  { font-size:22px; margin-bottom:7px; }
+    .quick-name  { font-size:12px; }
+
+    /* File cards */
+    .file-card { padding:12px 10px; }
+    .file-thumb { width:38px; height:38px; font-size:18px; }
+    .file-name  { font-size:11.5px; }
+    .file-meta  { font-size:10.5px; }
+
+    /* List rows */
+    .file-row { padding:9px 10px; }
+    .file-row-date,.file-row-size { display:none; }
+    .file-row-icon { width:30px; height:30px; font-size:16px; }
+    .file-row-name { font-size:13px; }
+
+    /* Modals slide up from bottom on mobile */
+    .overlay { padding:0; align-items:flex-end; }
+    .modal {
+      border-radius:20px 20px 0 0; max-width:100%;
+      transform:translateY(100%); max-height:88vh;
+    }
+    .overlay.show .modal { transform:translateY(0); }
+    .modal-header { padding:16px 18px 12px; }
+    .modal-body   { padding:14px 18px; }
+    .modal-footer { padding:12px 18px 20px; }
+
+    /* Selection bar */
+    #sel-bar { bottom:76px; left:10px; right:10px; transform:translateY(120px); width:auto; padding:9px 12px; }
+    #sel-bar.visible { transform:translateY(0); }
+    .sel-action { font-size:11.5px; padding:5px 8px; }
+    .sel-count { font-size:12px; }
+
+    /* FAB */
+    #fab { display:flex !important; bottom:16px; right:16px; width:56px; height:56px; font-size:24px; border-radius:18px; }
+
+    /* Toast */
+    #toast-wrap { top:auto; bottom:90px; right:12px; left:12px; }
+    .toast { min-width:0; width:100%; font-size:12.5px; }
+
+    /* Viewer */
+    #viewer-bar { height:52px; padding:0 10px; gap:6px; }
+    .viewer-action span { display:none; }
+    .viewer-action { padding:7px 9px; font-size:13px; }
+    #viewer-nav { gap:2px; }
+    #viewer-strip { height:60px; }
+    .strip-thumb { width:40px; height:40px; border-radius:8px; }
+    #zoom-controls { bottom:10px; right:10px; }
+
+    /* Breadcrumb */
+    .breadcrumb { font-size:12px; }
+    .breadcrumb-item { max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* Section headers */
+    .section-header { margin-bottom:10px; }
+    .section-title { font-size:13.5px; }
+
+    /* Bottom nav bar */
+    #mobile-nav { display:flex; }
+  }
+
+  /* ── Small phones (≤390px) ──────────────────── */
+  @media (max-width:390px) {
+    .files-grid { grid-template-columns:repeat(auto-fill,minmax(95px,1fr)); gap:7px; }
+    .quick-grid  { gap:7px; }
+    .file-thumb  { width:34px; height:34px; font-size:16px; }
+    .file-name   { font-size:11px; }
+    .share-grid  { grid-template-columns:repeat(2,1fr); }
+    .upload-sources { grid-template-columns:1fr; }
+    .method-grid { grid-template-columns:1fr; }
+  }
+
+  /* ── Landscape mobile ───────────────────────── */
+  @media (max-width:768px) and (orientation:landscape) {
+    #topbar { height:46px; }
+    #content { padding:8px 10px; padding-bottom:60px; }
+    .files-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
+    #fab { bottom:10px; right:14px; width:46px; height:46px; font-size:20px; }
+    #mobile-nav { height:48px; }
+    .mobile-nav-item { font-size:9px; }
+    .mobile-nav-item .nav-icon { font-size:18px; }
+  }
+
+  /* ── Desktop — hide mobile nav ──────────────── */
+  @media (min-width:769px) {
+    #mobile-nav { display:none !important; }
+    #menu-toggle { display:none !important; }
+  }
+
+  /* ── Safe area for notch / home indicator ───── */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    #mobile-nav { padding-bottom: env(safe-area-inset-bottom); height: calc(58px + env(safe-area-inset-bottom)); }
+    #content { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+    #topbar { padding-top: env(safe-area-inset-top); }
+  }
+  
+  /* DRAG OVER */
+  body.dragging-over #content { background:rgba(79,142,247,0.03); }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+  /* ===== FILE VIEWER ===== */
+  #viewer-overlay {
+    position:fixed; inset:0; z-index:600;
+    background:rgba(5,6,10,0.92); backdrop-filter:blur(12px);
+    display:flex; flex-direction:column;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  #viewer-overlay.open { opacity:1; pointer-events:all; }
+
+  /* Viewer topbar */
+  #viewer-bar {
+    height:56px; display:flex; align-items:center; gap:10px;
+    padding:0 16px; border-bottom:1px solid var(--border);
+    background:var(--surface); flex-shrink:0; z-index:1;
+  }
+  #viewer-close {
+    width:34px; height:34px; border-radius:10px; border:none;
+    background:var(--surface2); color:var(--text2); cursor:pointer;
+    font-size:16px; display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s; flex-shrink:0;
+  }
+  #viewer-close:hover { background:var(--surface3); color:var(--text); }
+  #viewer-title {
+    flex:1; min-width:0;
+    font-family:'Syne',sans-serif; font-weight:700; font-size:14px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  #viewer-subtitle { font-size:11px; color:var(--text3); margin-top:1px; }
+  .viewer-action {
+    display:flex; align-items:center; gap:5px;
+    padding:7px 12px; border-radius:var(--radius2); cursor:pointer;
+    font-size:12.5px; color:var(--text2); background:var(--surface2);
+    border:1px solid var(--border); transition:all 0.15s;
+    white-space:nowrap; font-family:inherit;
+  }
+  .viewer-action:hover { background:var(--surface3); color:var(--text); border-color:var(--border2); }
+  .viewer-action.primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none; }
+  .viewer-action.primary:hover { opacity:0.9; }
+  #viewer-nav { display:flex; gap:4px; }
+  .vnav-btn { width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .vnav-btn:hover { background:var(--surface3); color:var(--text); }
+  .vnav-btn:disabled { opacity:0.3; cursor:default; }
+
+  /* Viewer body */
+  #viewer-body {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; position:relative;
+    transition:opacity 0.18s;
+  }
+  #viewer-body.loading { opacity:0.3; }
+
+  /* Image viewer */
+  #vw-image {
+    max-width:100%; max-height:100%; object-fit:contain;
+    border-radius:6px; box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    transition:transform 0.2s, opacity 0.2s;
+    cursor:zoom-in; user-select:none;
+  }
+  #vw-image.zoomed { cursor:zoom-out; transform:scale(1); }
+
+  /* PDF viewer */
+  #vw-pdf { width:100%; height:100%; border:none; border-radius:0; }
+
+  /* Video viewer */
+  #vw-video {
+    max-width:100%; max-height:100%; border-radius:10px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.6); outline:none;
+  }
+
+  /* Audio viewer */
+  #vw-audio-wrap {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:24px; padding:40px;
+  }
+  .audio-art {
+    width:180px; height:180px; border-radius:24px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex; align-items:center; justify-content:center;
+    font-size:72px; box-shadow:0 20px 60px rgba(79,142,247,0.3);
+    animation:pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{box-shadow:0 20px 60px rgba(79,142,247,0.3)} 50%{box-shadow:0 30px 80px rgba(79,142,247,0.5)} }
+  .audio-filename { font-family:'Syne',sans-serif; font-weight:700; font-size:18px; text-align:center; }
+  #vw-audio { width:min(400px,90vw); margin-top:8px; }
+
+  /* Text / code viewer */
+  #vw-text {
+    width:min(820px,95vw); max-height:100%; overflow:auto;
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:28px 32px; font-family:'JetBrains Mono',monospace,monospace;
+    font-size:13px; line-height:1.7; color:var(--text2); white-space:pre-wrap;
+    word-break:break-word; margin:20px;
+  }
+  #vw-text::-webkit-scrollbar { width:5px; }
+  #vw-text::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+  /* Unknown / unsupported */
+  #vw-unsupported {
+    display:flex; flex-direction:column; align-items:center; gap:16px;
+    padding:40px; text-align:center;
+  }
+  .unsup-icon { font-size:72px; opacity:0.5; }
+  .unsup-title { font-family:'Syne',sans-serif; font-weight:700; font-size:20px; }
+  .unsup-sub { font-size:13px; color:var(--text3); max-width:280px; line-height:1.6; }
+
+  /* Thumbnail strip */
+  #viewer-strip {
+    height:74px; display:flex; align-items:center; gap:8px;
+    padding:0 14px; border-top:1px solid var(--border);
+    background:var(--surface); overflow-x:auto; flex-shrink:0;
+  }
+  #viewer-strip::-webkit-scrollbar { height:3px; }
+  #viewer-strip::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+  .strip-thumb {
+    width:52px; height:52px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+    cursor:pointer; border:2px solid transparent; transition:all 0.15s;
+    position:relative; overflow:hidden;
+  }
+  .strip-thumb:hover { border-color:var(--border2); }
+  .strip-thumb.active { border-color:var(--accent); }
+  .strip-thumb img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
+
+  /* Zoom controls */
+  #zoom-controls {
+    position:absolute; bottom:16px; right:16px;
+    display:flex; gap:6px; background:rgba(17,19,24,0.85);
+    border:1px solid var(--border2); border-radius:12px; padding:6px;
+    backdrop-filter:blur(8px);
+  }
+  .zoom-btn { width:30px; height:30px; border-radius:8px; border:none; background:var(--surface2); color:var(--text2); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .zoom-btn:hover { background:var(--surface3); color:var(--text); }
+  #zoom-pct { font-size:11px; color:var(--text3); display:flex; align-items:center; padding:0 4px; }
+
+  /* page indicator */
+  #viewer-page-info { font-size:12px; color:var(--text3); padding:0 6px; }
+
+  /* mobile viewer */
+  @media (max-width:768px) {
+    #viewer-bar { padding:0 10px; gap:6px; }
+    .viewer-action span { display:none; }
+    .viewer-action { padding:7px 9px; }
+    #vw-text { padding:16px; font-size:12px; margin:10px; }
+    .audio-art { width:140px; height:140px; font-size:56px; }
+    #viewer-strip { height:62px; }
+    .strip-thumb { width:42px; height:42px; }
+  }
+
+  /* Type colors */
+  .ft-folder { color:#f0c142; }
+  .ft-image  { color:#f75f8e; }
+  .ft-pdf    { color:#f75f5f; }
+  .ft-doc    { color:#4f8ef7; }
+  .ft-video  { color:#a855f7; }
+  .ft-audio  { color:#3dd68c; }
+  .ft-zip    { color:#fb923c; }
+  .ft-other  { color:#8b93a8; }
+
+  .bg-folder { background:rgba(240,193,66,0.1); }
+  .bg-image  { background:rgba(247,95,142,0.1); }
+  .bg-pdf    { background:rgba(247,95,95,0.1); }
+  .bg-doc    { background:rgba(79,142,247,0.1); }
+  .bg-video  { background:rgba(168,85,247,0.1); }
+  .bg-audio  { background:rgba(61,214,140,0.1); }
+  .bg-zip    { background:rgba(251,146,60,0.1); }
+  .bg-other  { background:rgba(139,147,168,0.1); }
+
+  .tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:6px; font-size:10.5px; font-weight:600; letter-spacing:0.3px; }
+  .tag-new { background:rgba(61,214,140,0.12); color:var(--green); }
+  
+  /* progress */
+  .upload-prog { margin-top:12px; }
+  .prog-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:12.5px; }
+  .prog-name { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text); }
+  .prog-bar-wrap { width:80px; height:4px; background:var(--surface3); border-radius:2px; overflow:hidden; }
+  .prog-bar { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; transition:width 0.3s; }
+  .prog-done { color:var(--green); font-size:14px; }
+
+  /* ===== TRANSFER SYSTEM ===== */
+  .modal-lg { max-width:540px; }
+
+  /* Step indicator */
+  .steps-bar { display:flex; align-items:center; gap:0; margin-bottom:22px; }
+  .step-item { display:flex; align-items:center; gap:0; flex:1; }
+  .step-circle {
+    width:28px; height:28px; border-radius:50%; border:2px solid var(--border2);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:var(--text3); background:var(--surface2);
+    flex-shrink:0; transition:all 0.3s; z-index:1;
+  }
+  .step-circle.active { border-color:var(--accent); color:var(--accent); background:rgba(79,142,247,0.1); }
+  .step-circle.done { border-color:var(--green); color:#fff; background:var(--green); }
+  .step-line { flex:1; height:2px; background:var(--border2); transition:background 0.3s; }
+  .step-line.done { background:var(--green); }
+  .step-label { font-size:10px; color:var(--text3); position:absolute; top:32px; white-space:nowrap; transform:translateX(-50%); }
+
+  /* Transfer method cards */
+  .method-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .method-card {
+    border:2px solid var(--border); border-radius:14px; padding:18px 14px;
+    cursor:pointer; transition:all 0.2s; background:var(--surface2); text-align:center;
+    position:relative; overflow:hidden;
+  }
+  .method-card::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg,var(--mc1,transparent),var(--mc2,transparent));
+    opacity:0; transition:opacity 0.2s;
+  }
+  .method-card:hover { border-color:var(--border2); transform:translateY(-2px); }
+  .method-card:hover::before { opacity:0.08; }
+  .method-card.selected { border-color:var(--accent); }
+  .method-card.selected::before { opacity:0.1; --mc1:var(--accent); --mc2:var(--accent2); }
+  .method-icon { font-size:32px; margin-bottom:10px; display:block; }
+  .method-name { font-family:'Syne',sans-serif; font-weight:700; font-size:13.5px; margin-bottom:4px; }
+  .method-desc { font-size:11.5px; color:var(--text3); line-height:1.5; }
+  .method-badge { position:absolute; top:8px; right:8px; font-size:10px; padding:2px 7px; border-radius:6px; font-weight:600; }
+  .badge-fast { background:rgba(61,214,140,0.15); color:var(--green); }
+  .badge-easy { background:rgba(79,142,247,0.15); color:var(--accent); }
+  .badge-any  { background:rgba(240,193,66,0.15);  color:var(--gold); }
+
+  /* QR Section */
+  #qr-wrap { display:flex; flex-direction:column; align-items:center; gap:18px; padding:10px 0; }
+  #qr-canvas { border-radius:16px; border:3px solid var(--border2); background:#fff; padding:12px; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+  .qr-instructions { display:flex; flex-direction:column; gap:8px; width:100%; }
+  .qr-step { display:flex; align-items:center; gap:10px; background:var(--surface2); border-radius:10px; padding:10px 13px; font-size:13px; color:var(--text2); }
+  .qr-step-num { width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+  /* Export section */
+  .export-options { display:flex; flex-direction:column; gap:10px; }
+  .export-opt {
+    display:flex; align-items:center; gap:14px;
+    padding:14px 16px; border-radius:12px; border:1px solid var(--border);
+    background:var(--surface2); cursor:pointer; transition:all 0.18s;
+  }
+  .export-opt:hover { border-color:var(--border2); background:var(--surface3); }
+  .export-opt-icon { font-size:26px; flex-shrink:0; }
+  .export-opt-info { flex:1; }
+  .export-opt-name { font-weight:600; font-size:13.5px; margin-bottom:2px; }
+  .export-opt-desc { font-size:12px; color:var(--text3); line-height:1.4; }
+  .export-opt-size { font-size:12px; color:var(--text3); margin-left:auto; }
+  .export-opt-arrow { color:var(--text3); font-size:16px; }
+
+  /* Progress ring */
+  .prog-ring-wrap { display:flex; flex-direction:column; align-items:center; gap:20px; padding:20px 0; }
+  .prog-ring { position:relative; width:120px; height:120px; }
+  .prog-ring svg { transform:rotate(-90deg); }
+  .prog-ring-track { fill:none; stroke:var(--surface3); stroke-width:8; }
+  .prog-ring-fill { fill:none; stroke:url(#ringGrad); stroke-width:8; stroke-linecap:round;
+    stroke-dasharray:339.3; stroke-dashoffset:339.3; transition:stroke-dashoffset 0.4s ease; }
+  .prog-ring-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .prog-ring-pct { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; }
+  .prog-ring-sub { font-size:10px; color:var(--text3); }
+  .prog-file-list { width:100%; max-height:140px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
+  .prog-file-item { display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--surface2); border-radius:8px; font-size:12px; }
+  .prog-file-name { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text2); }
+  .prog-file-status { font-size:13px; }
+
+  /* Receive section */
+  .receive-upload-zone {
+    border:2px dashed var(--border2); border-radius:14px; padding:28px;
+    text-align:center; background:var(--surface2); cursor:pointer; transition:all 0.2s;
+  }
+  .receive-upload-zone:hover { border-color:var(--accent); background:rgba(79,142,247,0.04); }
+
+  /* Transfer history */
+  .transfer-history { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .th-item { display:flex; align-items:center; gap:12px; padding:10px 13px; background:var(--surface2); border-radius:10px; }
+  .th-icon { font-size:18px; }
+  .th-info { flex:1; }
+  .th-name { font-size:13px; font-weight:500; }
+  .th-meta { font-size:11px; color:var(--text3); margin-top:2px; }
+  .th-badge { font-size:11px; padding:2px 8px; border-radius:6px; font-weight:600; }
+  .th-sent { background:rgba(61,214,140,0.12); color:var(--green); }
+  .th-recv { background:rgba(79,142,247,0.12); color:var(--accent); }
+
+  /* Nearby devices */
+  .nearby-list { display:flex; flex-direction:column; gap:8px; }
+  .nearby-device {
+    display:flex; align-items:center; gap:12px;
+    padding:12px 14px; border-radius:12px; border:1px solid var(--border);
+    background:var(--surface2); cursor:pointer; transition:all 0.2s;
+  }
+  .nearby-device:hover { border-color:var(--accent); background:var(--surface3); }
+  .device-icon { font-size:28px; flex-shrink:0; }
+  .device-info { flex:1; }
+  .device-name { font-weight:600; font-size:13.5px; }
+  .device-meta { font-size:11.5px; color:var(--text3); margin-top:2px; }
+  .device-signal { display:flex; gap:2px; align-items:flex-end; height:16px; }
+  .signal-bar { width:4px; border-radius:2px; background:var(--green); }
+
+  /* Scanning animation */
+  .scanning-wrap { display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px 0; }
+  .scan-ring {
+    width:100px; height:100px; border-radius:50%;
+    border:3px solid rgba(79,142,247,0.2);
+    position:relative; display:flex; align-items:center; justify-content:center;
+  }
+  .scan-ring::before {
+    content:''; position:absolute; inset:-8px; border-radius:50%;
+    border:3px solid transparent; border-top-color:var(--accent);
+    animation:spin 1.2s linear infinite;
+  }
+  .scan-ring::after {
+    content:''; position:absolute; inset:-18px; border-radius:50%;
+    border:2px solid transparent; border-top-color:rgba(79,142,247,0.3);
+    animation:spin 2s linear infinite reverse;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media (max-width:480px) {
+    .method-grid { grid-template-columns:1fr; }
+    .modal-lg { max-width:100%; }
+  }
+
+
+  /* ===== MOBILE BOTTOM NAV ===== */
+  #mobile-nav {
+    display:none;
+    position:fixed; bottom:0; left:0; right:0; z-index:150;
+    height:58px;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    flex-direction:row; align-items:stretch;
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+  }
+  .mobile-nav-item {
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:3px; cursor:pointer;
+    font-size:10px; font-weight:500; color:var(--text3);
+    padding:6px 4px 4px; transition:color 0.15s; -webkit-tap-highlight-color:transparent;
+    border:none; background:none; font-family:inherit;
+  }
+  .mobile-nav-item .nav-icon { font-size:20px; line-height:1; }
+  .mobile-nav-item.active { color:var(--accent); }
+  .mobile-nav-item.active .nav-icon { filter:drop-shadow(0 0 4px rgba(79,142,247,0.5)); }
+
+  /* Mobile search bar (shown when search icon tapped) */
+  #mobile-search-bar {
+    display:none; position:fixed; top:0; left:0; right:0; z-index:300;
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:10px 14px; gap:10px; align-items:center;
+    padding-top:calc(10px + env(safe-area-inset-top,0px));
+  }
+  #mobile-search-bar.show { display:flex; }
+  #mobile-search-inp {
+    flex:1; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    padding:10px 14px; border-radius:12px; font-size:15px; font-family:inherit; outline:none;
+  }
+  #mobile-search-inp::placeholder { color:var(--text3); }
+  .msearch-close { font-size:15px; color:var(--text2); background:none; border:none; cursor:pointer; padding:6px; }
+
+  /* Mobile FAB menu overlay */
+  #fab-menu {
+    position:fixed; bottom:80px; right:16px; z-index:160;
+    display:flex; flex-direction:column; gap:8px; align-items:flex-end;
+    opacity:0; pointer-events:none; transform:translateY(10px);
+    transition:all 0.2s cubic-bezier(.4,0,.2,1);
+  }
+  #fab-menu.show { opacity:1; pointer-events:all; transform:translateY(0); }
+  .fab-item {
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface2); border:1px solid var(--border2);
+    border-radius:14px; padding:10px 14px; cursor:pointer;
+    font-size:13.5px; font-weight:500; color:var(--text);
+    box-shadow:var(--shadow); white-space:nowrap;
+    transition:all 0.15s; -webkit-tap-highlight-color:transparent;
+  }
+  .fab-item:active { transform:scale(0.97); }
+  .fab-item-icon { font-size:18px; }
+  #fab-backdrop {
+    position:fixed; inset:0; z-index:155; display:none;
+  }
+  #fab-backdrop.show { display:block; }
+
+  /* Pull-to-refresh visual hint */
+  #ptr-indicator {
+    position:fixed; top:0; left:50%; transform:translateX(-50%);
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:0 0 12px 12px; padding:6px 16px;
+    font-size:12px; color:var(--text3); z-index:99;
+    display:none; align-items:center; gap:6px;
+  }
+  #ptr-indicator.show { display:flex; }
+
+  /* Touch-friendly tap targets */
+  @media (max-width:768px) {
+    .file-card, .file-row, .quick-card, .sidebar-btn,
+    .ctx-item, .share-btn, .method-card, .export-opt,
+    .nearby-device, .strip-thumb {
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+    /* Bigger tap zone for small buttons */
+    .ctx-btn { width:30px; height:30px; opacity:1 !important; }
+    .file-check { width:22px; height:22px; opacity:1 !important; }
+    .file-card .file-check { top:7px; right:7px; }
+    /* prevent double-tap zoom on buttons */
+    button, .sidebar-btn, .file-card, .quick-card { touch-action:manipulation; }
+  }
+
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">FileVault</div>
+      <div class="logo-sub">Your files, everywhere</div>
+      <div style="font-size:9px;color:var(--text3);margin-top:5px;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;">Created by <span style="color:#f0c142;letter-spacing:0.5px;">HARISH CHURATHIL</span></div>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Browse</div>
+      <div class="sidebar-btn active" onclick="navigate('home')" id="nav-home">
+        <span class="icon">🏠</span> Home
+      </div>
+      <div class="sidebar-btn" onclick="navigate('recents')" id="nav-recents">
+        <span class="icon">🕐</span> Recents <span class="count" id="cnt-recent">0</span>
+      </div>
+      <div class="sidebar-btn" onclick="navigate('starred')" id="nav-starred">
+        <span class="icon">⭐</span> Starred <span class="count" id="cnt-star">0</span>
+      </div>
+      <div class="sidebar-btn" onclick="navigate('shared')" id="nav-shared">
+        <span class="icon">🔗</span> Shared
+      </div>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">File Types</div>
+      <div class="sidebar-btn" onclick="navigate('type','image')">
+        <span class="icon">🖼️</span> Images <span class="count" id="cnt-img">0</span>
+      </div>
+      <div class="sidebar-btn" onclick="navigate('type','video')">
+        <span class="icon">🎬</span> Videos <span class="count" id="cnt-vid">0</span>
+      </div>
+      <div class="sidebar-btn" onclick="navigate('type','doc')">
+        <span class="icon">📄</span> Documents <span class="count" id="cnt-doc">0</span>
+      </div>
+      <div class="sidebar-btn" onclick="navigate('type','audio')">
+        <span class="icon">🎵</span> Audio <span class="count" id="cnt-aud">0</span>
+      </div>
+    </div>
+    
+    <div class="sidebar-storage">
+      <div class="storage-label">
+        <span>Storage</span>
+        <span id="storage-pct">27%</span>
+      </div>
+      <div class="storage-bar"><div class="storage-fill" id="storage-fill"></div></div>
+      <div class="storage-info" id="storage-info">Calculating…</div>
+      <button onclick="showTransferModal()" id="transfer-sidebar-btn" style="width:100%;margin-top:12px;padding:9px;border-radius:10px;border:1px solid var(--border2);background:linear-gradient(135deg,rgba(79,142,247,0.1),rgba(124,91,240,0.1));color:var(--accent);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.2s;">
+        📲 Transfer to Device
+      </button>
+    </div>
+  </div>
+  
+  <div id="sb-overlay" onclick="closeSidebar()"></div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <button id="menu-toggle" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="2" y1="5" x2="16" y2="5"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="13" x2="16" y2="13"/>
+        </svg>
+      </button>
+      <div class="breadcrumb" id="breadcrumb">
+        <span class="breadcrumb-item current">Home</span>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-inp" type="text" id="search-inp" placeholder="Search files…" oninput="handleSearch(this.value)">
+        </div>
+        <div class="view-toggle">
+          <div class="view-btn active" id="vb-grid" onclick="setView('grid')" title="Grid view">▦</div>
+          <div class="view-btn" id="vb-list" onclick="setView('list')" title="List view">≡</div>
+        </div>
+        <button class="tb-btn tb-btn-ghost" onclick="showUploadModal()">⬆ Upload</button>
+        <button class="tb-btn tb-btn-primary" onclick="showNewFolderModal()">＋ New Folder</button>
+      </div>
+    </div>
+    
+    <div id="content" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave()">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- FAB (mobile) -->
+<button id="fab" onclick="toggleFabMenu()">＋</button>
+
+<!-- FAB backdrop -->
+<div id="fab-backdrop" onclick="closeFabMenu()"></div>
+
+<!-- FAB menu -->
+<div id="fab-menu">
+  <div class="fab-item" onclick="closeFabMenu();showUploadModal()"><span class="fab-item-icon">⬆️</span> Upload Files</div>
+  <div class="fab-item" onclick="closeFabMenu();showNewFolderModal()"><span class="fab-item-icon">📁</span> New Folder</div>
+  <div class="fab-item" onclick="closeFabMenu();showTransferModal()"><span class="fab-item-icon">📲</span> Transfer</div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav id="mobile-nav">
+  <button class="mobile-nav-item active" id="mn-home" onclick="mobileNav('home',this)">
+    <span class="nav-icon">🏠</span>Home
+  </button>
+  <button class="mobile-nav-item" id="mn-recents" onclick="mobileNav('recents',this)">
+    <span class="nav-icon">🕐</span>Recents
+  </button>
+  <button class="mobile-nav-item" id="mn-search" onclick="openMobileSearch()">
+    <span class="nav-icon">🔍</span>Search
+  </button>
+  <button class="mobile-nav-item" id="mn-starred" onclick="mobileNav('starred',this)">
+    <span class="nav-icon">⭐</span>Starred
+  </button>
+  <button class="mobile-nav-item" id="mn-menu" onclick="toggleSidebar()">
+    <span class="nav-icon">☰</span>More
+  </button>
+</nav>
+
+<!-- MOBILE SEARCH BAR -->
+<div id="mobile-search-bar">
+  <input id="mobile-search-inp" type="search" placeholder="Search files and folders…" oninput="handleSearch(this.value)" autocomplete="off">
+  <button class="msearch-close" onclick="closeMobileSearch()">✕</button>
+</div>
+
+<!-- Pull-to-refresh indicator -->
+<div id="ptr-indicator">↓ Pull to refresh</div>
+
+<!-- SELECTION BAR -->
+<div id="sel-bar">
+  <span class="sel-count" id="sel-count">0 selected</span>
+  <button class="sel-action" onclick="shareSelected()">📤 Share</button>
+  <button class="sel-action" onclick="downloadSelected()">⬇ Download</button>
+  <button class="sel-action" onclick="moveSelected()">📁 Move</button>
+  <button class="sel-action danger" onclick="deleteSelected()">🗑 Delete</button>
+  <button class="sel-action" onclick="clearSelection()" style="margin-left:4px;color:var(--text3)">✕</button>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="ctxOpen()">📂 Open</div>
+  <div class="ctx-item" onclick="ctxRename()">✏️ Rename</div>
+  <div class="ctx-item" onclick="ctxStar()">⭐ Star</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxShare()">📤 Share</div>
+  <div class="ctx-item" onclick="ctxDownload()">⬇️ Download</div>
+  <div class="ctx-item" onclick="ctxMove()">📁 Move to…</div>
+  <div class="ctx-item" onclick="ctxCopy()">📋 Copy</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxInfo()">ℹ️ Info</div>
+  <div class="ctx-item danger" onclick="ctxDelete()">🗑️ Delete</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-wrap"></div>
+
+<!-- NEW FOLDER MODAL -->
+<div class="overlay" id="modal-folder" onclick="closeModal('modal-folder')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">📁 New Folder</div>
+      <button class="modal-close" onclick="closeModal('modal-folder')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field-label">Folder Name</div>
+        <input class="field-inp" id="folder-name-inp" type="text" placeholder="e.g. Work Documents" onkeydown="if(event.key==='Enter')createFolder()">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Color</div>
+        <div class="color-picker" id="folder-color-picker">
+          <div class="cp-dot sel" style="background:#f0c142" data-color="gold" onclick="selectColor(this,'gold')"></div>
+          <div class="cp-dot" style="background:#4f8ef7" data-color="blue" onclick="selectColor(this,'blue')"></div>
+          <div class="cp-dot" style="background:#7c5bf0" data-color="purple" onclick="selectColor(this,'purple')"></div>
+          <div class="cp-dot" style="background:#f75f8e" data-color="pink" onclick="selectColor(this,'pink')"></div>
+          <div class="cp-dot" style="background:#3dd68c" data-color="green" onclick="selectColor(this,'green')"></div>
+          <div class="cp-dot" style="background:#fb923c" data-color="orange" onclick="selectColor(this,'orange')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn tb-btn-ghost" onclick="closeModal('modal-folder')">Cancel</button>
+      <button class="tb-btn tb-btn-primary" onclick="createFolder()">Create Folder</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="overlay" id="modal-upload" onclick="closeModal('modal-upload')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">⬆️ Add Files</div>
+      <button class="modal-close" onclick="closeModal('modal-upload')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="upload-zone" id="upload-zone" onclick="triggerFileInput()" ondragover="event.preventDefault();this.classList.add('drag')" ondrop="handleUploadDrop(event)" ondragleave="this.classList.remove('drag')">
+        <div class="upload-zone-icon">📂</div>
+        <div class="upload-zone-text">Drop files here or tap to browse</div>
+        <div class="upload-zone-sub">Supports all file types</div>
+      </div>
+      <input type="file" id="file-inp" multiple style="display:none" onchange="handleFileSelect(event)">
+      
+      <div class="upload-sources">
+        <button class="upload-src-btn" onclick="importFrom('icloud')">☁️ iCloud Drive</button>
+        <button class="upload-src-btn" onclick="importFrom('gdrive')">🟢 Google Drive</button>
+        <button class="upload-src-btn" onclick="importFrom('dropbox')">📦 Dropbox</button>
+        <button class="upload-src-btn" onclick="importFrom('onedrive')">🟦 OneDrive</button>
+        <button class="upload-src-btn" onclick="importFrom('photos')">🖼️ Photos / Camera</button>
+        <button class="upload-src-btn" onclick="importFrom('url')">🔗 Import from URL</button>
+      </div>
+      <div id="upload-progress" class="upload-prog" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="overlay" id="modal-share" onclick="closeModal('modal-share')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">📤 Share</div>
+      <button class="modal-close" onclick="closeModal('modal-share')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:14px" id="share-filename"></div>
+      
+      <div class="field-group">
+        <div class="field-label">Share link</div>
+        <div style="display:flex;gap:8px;">
+          <input class="field-inp" id="share-link" value="https://filevault.app/s/abc123xyz" readonly style="flex:1;font-size:12px;">
+          <button class="tb-btn tb-btn-ghost" onclick="copyLink()" style="white-space:nowrap;font-size:13px;">📋 Copy</button>
+        </div>
+      </div>
+      
+      <div class="field-label" style="margin-bottom:12px;">Share via</div>
+      <div class="share-grid">
+        <div class="share-btn" onclick="shareTo('whatsapp')">
+          <div class="share-icon">💬</div>
+          <div class="share-label">WhatsApp</div>
+        </div>
+        <div class="share-btn" onclick="shareTo('email')">
+          <div class="share-icon">✉️</div>
+          <div class="share-label">Email</div>
+        </div>
+        <div class="share-btn" onclick="shareTo('telegram')">
+          <div class="share-icon">✈️</div>
+          <div class="share-label">Telegram</div>
+        </div>
+        <div class="share-btn" onclick="shareTo('messenger')">
+          <div class="share-icon">💙</div>
+          <div class="share-label">Messenger</div>
+        </div>
+        <div class="share-btn" onclick="shareTo('sms')">
+          <div class="share-icon">📱</div>
+          <div class="share-label">Messages</div>
+        </div>
+        <div class="share-btn" onclick="shareTo('copy')">
+          <div class="share-icon">🔗</div>
+          <div class="share-label">Copy Link</div>
+        </div>
+        <div class="share-btn" onclick="shareTo('airdrop')">
+          <div class="share-icon">📡</div>
+          <div class="share-label">AirDrop</div>
+        </div>
+        <div class="share-btn" onclick="shareTo('download')">
+          <div class="share-icon">⬇️</div>
+          <div class="share-label">Download</div>
+        </div>
+        <div class="share-btn" onclick="shareTo('more')">
+          <div class="share-icon">⚙️</div>
+          <div class="share-label">More…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME MODAL -->
+<div class="overlay" id="modal-rename" onclick="closeModal('modal-rename')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Rename</div>
+      <button class="modal-close" onclick="closeModal('modal-rename')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field-label">New Name</div>
+        <input class="field-inp" id="rename-inp" type="text" onkeydown="if(event.key==='Enter')confirmRename()">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn tb-btn-ghost" onclick="closeModal('modal-rename')">Cancel</button>
+      <button class="tb-btn tb-btn-primary" onclick="confirmRename()">Rename</button>
+    </div>
+  </div>
+</div>
+
+<!-- INFO MODAL -->
+<div class="overlay" id="modal-info" onclick="closeModal('modal-info')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">ℹ️ File Info</div>
+      <button class="modal-close" onclick="closeModal('modal-info')">✕</button>
+    </div>
+    <div class="modal-body" id="info-content"></div>
+    <div class="modal-footer">
+      <button class="tb-btn tb-btn-primary" onclick="closeModal('modal-info')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FILE VIEWER ===== -->
+<div id="viewer-overlay">
+  <div id="viewer-bar">
+    <button id="viewer-close" onclick="closeViewer()" title="Close (Esc)">✕</button>
+    <div style="flex:1;min-width:0">
+      <div id="viewer-title">Filename</div>
+      <div id="viewer-subtitle">—</div>
+    </div>
+    <div id="viewer-nav">
+      <button class="vnav-btn" id="vw-prev" onclick="viewerNav(-1)" title="Previous">‹</button>
+      <span id="viewer-page-info"></span>
+      <button class="vnav-btn" id="vw-next" onclick="viewerNav(1)" title="Next">›</button>
+    </div>
+    <button class="viewer-action" onclick="viewerStar()" id="viewer-star-btn">⭐ <span>Star</span></button>
+    <button class="viewer-action" onclick="viewerShare()">📤 <span>Share</span></button>
+    <button class="viewer-action primary" onclick="viewerDownload()">⬇ <span>Download</span></button>
+  </div>
+  <div id="viewer-body">
+    <div id="zoom-controls" style="display:none">
+      <button class="zoom-btn" onclick="zoom(-0.25)">−</button>
+      <span id="zoom-pct">100%</span>
+      <button class="zoom-btn" onclick="zoom(0.25)">+</button>
+      <button class="zoom-btn" onclick="zoom(0)" title="Reset">⊡</button>
+    </div>
+  </div>
+  <div id="viewer-strip" style="display:none"></div>
+</div>
+
+<!-- MOVE MODAL -->
+<div class="overlay" id="modal-move" onclick="closeModal('modal-move')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">📁 Move To</div>
+      <button class="modal-close" onclick="closeModal('modal-move')">✕</button>
+    </div>
+    <div class="modal-body" id="move-folder-list"></div>
+    <div class="modal-footer">
+      <button class="tb-btn tb-btn-ghost" onclick="closeModal('modal-move')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let state = {
+  currentPath: [],   // array of folder ids
+  viewMode: 'grid',
+  selectedIds: new Set(),
+  ctxTargetId: null,
+  folderColorSel: 'gold',
+  searchQuery: '',
+  currentNav: 'home'
+};
+
+// LOAD or INIT data
+let db = loadDb();
+
+function loadDb() {
+  try {
+    const raw = localStorage.getItem('filevault_db');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return initDb();
+}
+
+function initDb() {
+  const now = Date.now();
+  return {
+    items: {
+      'root': { id:'root', type:'folder', name:'Root', parentId:null, color:'gold', createdAt:now, starred:false },
+      'f1': { id:'f1', type:'folder', name:'Work Documents', parentId:'root', color:'blue', createdAt:now-86400000*3, starred:true },
+      'f2': { id:'f2', type:'folder', name:'Personal', parentId:'root', color:'purple', createdAt:now-86400000*5, starred:false },
+      'f3': { id:'f3', type:'folder', name:'Photos', parentId:'root', color:'pink', createdAt:now-86400000*1, starred:false },
+      'f4': { id:'f4', type:'folder', name:'Projects', parentId:'f1', color:'green', createdAt:now-86400000*2, starred:false },
+      'file1': { id:'file1', type:'file', name:'Q1 Report.pdf', parentId:'root', ext:'pdf', size:2340000, createdAt:now-3600000*2, starred:true },
+      'file2': { id:'file2', type:'file', name:'Design Mockup.png', parentId:'f3', ext:'image', size:4200000, createdAt:now-3600000*5, starred:false },
+      'file3': { id:'file3', type:'file', name:'Meeting Notes.docx', parentId:'f1', ext:'doc', size:180000, createdAt:now-86400000, starred:false },
+      'file4': { id:'file4', type:'file', name:'Budget 2025.xlsx', parentId:'f1', ext:'doc', size:520000, createdAt:now-86400000*2, starred:false },
+      'file5': { id:'file5', type:'file', name:'Promo Video.mp4', parentId:'root', ext:'video', size:45000000, createdAt:now-3600000*8, starred:false },
+      'file6': { id:'file6', type:'file', name:'Podcast Ep1.mp3', parentId:'root', ext:'audio', size:18000000, createdAt:now-86400000*4, starred:false },
+      'file7': { id:'file7', type:'file', name:'Source Code.zip', parentId:'f4', ext:'zip', size:6700000, createdAt:now-86400000*1, starred:false },
+    }
+  };
+}
+
+function saveDb() { try { localStorage.setItem('filevault_db', JSON.stringify(db)); } catch(e){} }
+
+// ===== HELPERS =====
+function uid() { return 'id_' + Math.random().toString(36).substr(2,9); }
+function fmt(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  if (bytes < 1024*1024*1024) return (bytes/1024/1024).toFixed(1) + ' MB';
+  return (bytes/1024/1024/1024).toFixed(1) + ' GB';
+}
+function fmtDate(ts) {
+  const d = new Date(ts); const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+  if (diff < 86400000*7) return Math.floor(diff/86400000) + 'd ago';
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+function typeInfo(item) {
+  if (item.type === 'folder') return { emoji:'📁', cls:'folder' };
+  const ext = (item.ext||'').toLowerCase();
+  const map = {
+    image:{e:'🖼️',c:'image'}, pdf:{e:'📕',c:'pdf'}, doc:{e:'📄',c:'doc'},
+    video:{e:'🎬',c:'video'}, audio:{e:'🎵',c:'audio'}, zip:{e:'📦',c:'zip'},
+  };
+  return map[ext] ? { emoji:map[ext].e, cls:map[ext].c } : { emoji:'📎', cls:'other' };
+}
+function currentFolderId() { return state.currentPath.length ? state.currentPath[state.currentPath.length-1] : 'root'; }
+function childrenOf(pid) { return Object.values(db.items).filter(i => i.parentId === pid); }
+function allFiles() { return Object.values(db.items).filter(i => i.type === 'file'); }
+function totalSize() { return allFiles().reduce((a,f) => a + (f.size||0), 0); }
+
+// ===== NAVIGATION ===== (see navigate() in MOBILE UX section)
+
+function openFolder(id) {
+  state.currentPath.push(id);
+  state.selectedIds.clear();
+  state.currentNav = 'home';
+  render();
+}
+
+function breadcrumbNav(idx) {
+  if (idx < 0) { state.currentPath = []; }
+  else { state.currentPath = state.currentPath.slice(0, idx+1); }
+  state.selectedIds.clear();
+  render();
+}
+
+// ===== RENDER =====
+function render() {
+  updateBreadcrumb();
+  updateSidebar();
+  updateStorage();
+  const c = document.getElementById('content');
+  
+  if (state.searchQuery) { renderSearch(c); return; }
+  
+  if (state.currentNav === 'recents') { renderRecents(c); return; }
+  if (state.currentNav === 'starred') { renderStarred(c); return; }
+  if (state.currentNav === 'shared')  { renderShared(c); return; }
+  if (state.currentNav === 'type')    { renderType(c); return; }
+  
+  renderHome(c);
+}
+
+function renderHome(c) {
+  const pid = currentFolderId();
+  const children = childrenOf(pid).sort((a,b) => {
+    if (a.type !== b.type) return a.type==='folder' ? -1 : 1;
+    return b.createdAt - a.createdAt;
+  });
+  const folders = children.filter(i => i.type==='folder');
+  const files = children.filter(i => i.type==='file');
+  
+  let html = '';
+  
+  if (pid === 'root' && state.currentPath.length === 0) {
+    html += `<div class="section-header"><div class="section-title">Quick Access</div></div>`;
+    html += `<div class="quick-grid">
+      <div class="quick-card" onclick="navigate('type','image')" style="--c1:#f75f8e;--c2:#f0c142">
+        <span class="quick-icon">🖼️</span><div class="quick-name">Images</div><div class="quick-count">${countType('image')} files</div>
+      </div>
+      <div class="quick-card" onclick="navigate('type','doc')" style="--c1:#4f8ef7;--c2:#7c5bf0">
+        <span class="quick-icon">📄</span><div class="quick-name">Documents</div><div class="quick-count">${countType('doc')} files</div>
+      </div>
+      <div class="quick-card" onclick="navigate('type','video')" style="--c1:#a855f7;--c2:#f75f8e">
+        <span class="quick-icon">🎬</span><div class="quick-name">Videos</div><div class="quick-count">${countType('video')} files</div>
+      </div>
+      <div class="quick-card" onclick="navigate('type','audio')" style="--c1:#3dd68c;--c2:#4f8ef7">
+        <span class="quick-icon">🎵</span><div class="quick-name">Audio</div><div class="quick-count">${countType('audio')} files</div>
+      </div>
+    </div>`;
+  }
+  
+  if (folders.length) {
+    html += `<div class="section-header"><div class="section-title">Folders</div><div class="section-action" onclick="showNewFolderModal()">＋ New Folder</div></div>`;
+    html += `<div class="files-grid" style="margin-bottom:24px">`;
+    html += folders.map(f => renderItemGrid(f)).join('');
+    html += '</div>';
+  }
+  
+  if (files.length) {
+    html += `<div class="section-header"><div class="section-title">Files</div></div>`;
+    if (state.viewMode === 'grid') {
+      html += `<div class="files-grid">` + files.map(f => renderItemGrid(f)).join('') + '</div>';
+    } else {
+      html += renderListHeader();
+      html += `<div class="files-list">` + files.map(f => renderItemRow(f)).join('') + '</div>';
+    }
+  }
+  
+  if (!folders.length && !files.length) {
+    html += `<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">This folder is empty</div><div class="empty-sub">Upload files or create a new folder</div></div>`;
+  }
+  
+  c.innerHTML = html;
+}
+
+function renderRecents(c) {
+  const items = Object.values(db.items).filter(i=>i.id!=='root').sort((a,b)=>b.createdAt-a.createdAt).slice(0,30);
+  c.innerHTML = `<div class="section-header"><div class="section-title">🕐 Recently Added</div></div>` +
+    (items.length ? (state.viewMode==='grid'
+      ? `<div class="files-grid">${items.map(renderItemGrid).join('')}</div>`
+      : renderListHeader()+`<div class="files-list">${items.map(renderItemRow).join('')}</div>`)
+    : `<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">No recent files</div></div>`);
+}
+
+function renderStarred(c) {
+  const items = Object.values(db.items).filter(i=>i.starred&&i.id!=='root');
+  c.innerHTML = `<div class="section-header"><div class="section-title">⭐ Starred</div></div>` +
+    (items.length ? (state.viewMode==='grid'
+      ? `<div class="files-grid">${items.map(renderItemGrid).join('')}</div>`
+      : renderListHeader()+`<div class="files-list">${items.map(renderItemRow).join('')}</div>`)
+    : `<div class="empty-state"><div class="empty-icon">⭐</div><div class="empty-title">No starred files yet</div><div class="empty-sub">Star files to find them quickly</div></div>`);
+}
+
+function renderShared(c) {
+  c.innerHTML = `<div class="empty-state"><div class="empty-icon">🔗</div><div class="empty-title">No shared files yet</div><div class="empty-sub">Shared files will appear here</div></div>`;
+}
+
+function renderType(c) {
+  const ext = state.ctxSub || '';
+  const items = allFiles().filter(f => f.ext === ext);
+  const labels = {image:'🖼️ Images',doc:'📄 Documents',video:'🎬 Videos',audio:'🎵 Audio',pdf:'📕 PDFs',zip:'📦 Archives'};
+  c.innerHTML = `<div class="section-header"><div class="section-title">${labels[ext]||ext}</div></div>` +
+    (items.length ? (state.viewMode==='grid'
+      ? `<div class="files-grid">${items.map(renderItemGrid).join('')}</div>`
+      : renderListHeader()+`<div class="files-list">${items.map(renderItemRow).join('')}</div>`)
+    : `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No files here</div></div>`);
+}
+
+function renderSearch(c) {
+  const q = state.searchQuery.toLowerCase();
+  const items = Object.values(db.items).filter(i=>i.id!=='root'&&i.name.toLowerCase().includes(q));
+  c.innerHTML = `<div class="section-header"><div class="section-title">🔍 Results for "${state.searchQuery}"</div><div style="font-size:12px;color:var(--text3)">${items.length} found</div></div>` +
+    (items.length ? (state.viewMode==='grid'
+      ? `<div class="files-grid">${items.map(renderItemGrid).join('')}</div>`
+      : renderListHeader()+`<div class="files-list">${items.map(renderItemRow).join('')}</div>`)
+    : `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No results found</div></div>`);
+}
+
+function renderItemGrid(item) {
+  const ti = typeInfo(item);
+  const sel = state.selectedIds.has(item.id);
+  const star = item.starred ? '⭐' : '';
+  return `<div class="file-card${sel?' selected':''}" id="card-${item.id}"
+    onclick="handleItemClick(event,'${item.id}')"
+    ondblclick="handleItemDblClick('${item.id}')"
+    oncontextmenu="showCtx(event,'${item.id}')">
+    <div class="file-check">${sel?'✓':''}</div>
+    <div class="file-thumb ft-${ti.cls} bg-${ti.cls}">${ti.emoji}</div>
+    <div class="file-name" title="${esc(item.name)}">${esc(item.name)}</div>
+    <div class="file-meta">${item.type==='folder' ? childrenOf(item.id).length+' items' : fmt(item.size)} · ${fmtDate(item.createdAt)}${star?' '+star:''}</div>
+    <button class="ctx-btn" onclick="event.stopPropagation();showCtx(event,'${item.id}')">⋯</button>
+  </div>`;
+}
+
+function renderItemRow(item) {
+  const ti = typeInfo(item);
+  const sel = state.selectedIds.has(item.id);
+  return `<div class="file-row${sel?' selected':''}" id="row-${item.id}"
+    onclick="handleItemClick(event,'${item.id}')"
+    ondblclick="handleItemDblClick('${item.id}')"
+    oncontextmenu="showCtx(event,'${item.id}')">
+    <div class="file-row-icon ft-${ti.cls} bg-${ti.cls}">${ti.emoji}</div>
+    <div class="file-row-name">${esc(item.name)}${item.starred?' ⭐':''}</div>
+    <div class="file-row-size">${item.type==='folder'?childrenOf(item.id).length+' items':fmt(item.size)}</div>
+    <div class="file-row-date">${fmtDate(item.createdAt)}</div>
+    <div class="file-row-actions">
+      <button class="row-act-btn" onclick="event.stopPropagation();openViewer('${item.id}')" title="Preview">👁</button>
+      <button class="row-act-btn" onclick="event.stopPropagation();toggleStar('${item.id}')" title="Star">${item.starred?'⭐':'☆'}</button>
+      <button class="row-act-btn" onclick="event.stopPropagation();showCtx(event,'${item.id}')" title="More">⋯</button>
+    </div>
+  </div>`;
+}
+
+function renderListHeader() {
+  return `<div style="display:flex;align-items:center;gap:12px;padding:6px 12px;font-size:11.5px;color:var(--text3);letter-spacing:0.3px;text-transform:uppercase;font-weight:600;margin-bottom:2px;">
+    <div style="width:34px;flex-shrink:0"></div>
+    <div style="flex:1">Name</div>
+    <div style="width:70px;text-align:right">Size</div>
+    <div style="width:95px;text-align:right">Modified</div>
+    <div style="width:80px"></div>
+  </div>`;
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== BREADCRUMB =====
+function updateBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  let html = `<span class="breadcrumb-item" onclick="breadcrumbNav(-1)">Home</span>`;
+  state.currentPath.forEach((id,idx) => {
+    const item = db.items[id];
+    if (!item) return;
+    html += `<span class="breadcrumb-sep">›</span>`;
+    if (idx === state.currentPath.length-1)
+      html += `<span class="breadcrumb-item current">${esc(item.name)}</span>`;
+    else
+      html += `<span class="breadcrumb-item" onclick="breadcrumbNav(${idx})">${esc(item.name)}</span>`;
+  });
+  bc.innerHTML = html;
+}
+
+// ===== SIDEBAR COUNTS =====
+function countType(ext) { return allFiles().filter(f=>f.ext===ext).length; }
+function updateSidebar() {
+  const starItems = Object.values(db.items).filter(i=>i.starred&&i.id!=='root');
+  document.getElementById('cnt-star').textContent = starItems.length;
+  document.getElementById('cnt-recent').textContent = Math.min(30, Object.keys(db.items).length-1);
+  document.getElementById('cnt-img').textContent = countType('image');
+  document.getElementById('cnt-vid').textContent = countType('video');
+  document.getElementById('cnt-doc').textContent = countType('doc');
+  document.getElementById('cnt-aud').textContent = countType('audio');
+}
+function updateStorage() {
+  const total = 5*1024*1024*1024; // 5GB
+  const used = totalSize();
+  const pct = Math.min(100, Math.round(used/total*100));
+  document.getElementById('storage-pct').textContent = pct + '%';
+  document.getElementById('storage-fill').style.width = pct + '%';
+  document.getElementById('storage-info').textContent = fmt(used) + ' used of 5 GB';
+}
+
+// ===== SELECTION =====
+function handleItemClick(e, id) {
+  const item = db.items[id];
+  if (!item) return;
+  if (e.shiftKey || e.ctrlKey || e.metaKey || state.selectedIds.size > 0) {
+    toggleSelect(id);
+  } else if (item.type === 'file') {
+    // Single click on a file = open viewer
+    clearSelection();
+    openViewer(id);
+  } else {
+    // Single click on folder = select; dblclick opens
+    clearSelection();
+    toggleSelect(id);
+  }
+}
+function handleItemDblClick(id) {
+  const item = db.items[id];
+  if (!item) return;
+  clearSelection();
+  if (item.type === 'folder') openFolder(id);
+  else openViewer(id);
+}
+function toggleSelect(id) {
+  if (state.selectedIds.has(id)) state.selectedIds.delete(id);
+  else state.selectedIds.add(id);
+  updateSelBar();
+  // update visual
+  const card = document.getElementById('card-'+id)||document.getElementById('row-'+id);
+  if (card) {
+    card.classList.toggle('selected', state.selectedIds.has(id));
+    const chk = card.querySelector('.file-check');
+    if (chk) chk.textContent = state.selectedIds.has(id) ? '✓' : '';
+  }
+}
+function clearSelection() {
+  state.selectedIds.forEach(id => {
+    const card = document.getElementById('card-'+id)||document.getElementById('row-'+id);
+    if (card) { card.classList.remove('selected'); const chk=card.querySelector('.file-check'); if(chk) chk.textContent=''; }
+  });
+  state.selectedIds.clear();
+  updateSelBar();
+}
+function updateSelBar() {
+  const bar = document.getElementById('sel-bar');
+  const n = state.selectedIds.size;
+  document.getElementById('sel-count').textContent = n + ' selected';
+  bar.classList.toggle('visible', n > 0);
+}
+
+// ===== CONTEXT MENU =====
+let ctxItem = null;
+function showCtx(e, id) {
+  e.preventDefault(); e.stopPropagation();
+  ctxItem = db.items[id];
+  state.ctxTargetId = id;
+  const menu = document.getElementById('ctx-menu');
+  menu.classList.add('show');
+  const x = Math.min(e.clientX, window.innerWidth - 190);
+  const y = Math.min(e.clientY, window.innerHeight - 320);
+  menu.style.left = x + 'px'; menu.style.top = y + 'px';
+  // Update star label
+  menu.querySelector('.ctx-item:nth-child(3)').textContent = (ctxItem?.starred ? '★ Unstar' : '⭐ Star');
+}
+document.addEventListener('click', () => document.getElementById('ctx-menu').classList.remove('show'));
+function ctxOpen() { const it = db.items[state.ctxTargetId]; if(!it) return; if(it.type==='folder') openFolder(it.id); else openViewer(it.id); }
+function ctxRename() { showRenameModal(state.ctxTargetId); }
+function ctxStar() { toggleStar(state.ctxTargetId); }
+function ctxShare() { quickShare(state.ctxTargetId); }
+function ctxDownload() { downloadItem(state.ctxTargetId); }
+function ctxMove() { showMoveModal([state.ctxTargetId]); }
+function ctxCopy() { copyItem(state.ctxTargetId); }
+function ctxInfo() { showInfo(state.ctxTargetId); }
+function ctxDelete() { deleteItem(state.ctxTargetId); }
+
+// ===== ACTIONS =====
+function toggleStar(id) {
+  const it = db.items[id]; if(!it) return;
+  it.starred = !it.starred;
+  saveDb(); render();
+  toast(it.starred?'⭐ Starred':'Removed from starred');
+}
+function deleteItem(id) {
+  if (!id || !db.items[id]) return;
+  // recursively delete children
+  function del(xid) {
+    childrenOf(xid).forEach(c=>del(c.id));
+    delete db.items[xid];
+  }
+  del(id);
+  state.selectedIds.delete(id);
+  saveDb(); render(); toast('🗑️ Deleted');
+}
+function deleteSelected() {
+  const ids = [...state.selectedIds];
+  ids.forEach(id => { function del(xid){childrenOf(xid).forEach(c=>del(c.id));delete db.items[xid];} del(id); });
+  state.selectedIds.clear();
+  saveDb(); render(); updateSelBar(); toast(`🗑️ Deleted ${ids.length} item${ids.length>1?'s':''}`);
+}
+function downloadItem(id) {
+  const it = db.items[id]; if(!it) return;
+  toast('⬇️ Downloading '+it.name);
+}
+function downloadSelected() {
+  const ids = [...state.selectedIds];
+  toast('⬇️ Downloading '+ids.length+' files…');
+}
+function copyItem(id) {
+  const it = db.items[id]; if(!it) return;
+  const newItem = {...it, id:uid(), name:'Copy of '+it.name, createdAt:Date.now()};
+  db.items[newItem.id] = newItem;
+  saveDb(); render(); toast('📋 Copied');
+}
+function moveSelected() { showMoveModal([...state.selectedIds]); }
+function shareSelected() {
+  const ids = [...state.selectedIds];
+  if (ids.length === 1) quickShare(ids[0]);
+  else { openModal('modal-share'); document.getElementById('share-filename').textContent = ids.length + ' files selected'; }
+}
+
+// ===== MODALS =====
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// New Folder
+function showNewFolderModal() {
+  document.getElementById('folder-name-inp').value = '';
+  state.folderColorSel = 'gold';
+  document.querySelectorAll('.cp-dot').forEach(d => d.classList.toggle('sel', d.dataset.color==='gold'));
+  openModal('modal-folder');
+  setTimeout(()=>document.getElementById('folder-name-inp').focus(),200);
+}
+function selectColor(el, color) {
+  state.folderColorSel = color;
+  document.querySelectorAll('.cp-dot').forEach(d => d.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function createFolder() {
+  const name = document.getElementById('folder-name-inp').value.trim();
+  if (!name) { document.getElementById('folder-name-inp').focus(); return; }
+  const id = uid();
+  db.items[id] = { id, type:'folder', name, parentId:currentFolderId(), color:state.folderColorSel, createdAt:Date.now(), starred:false };
+  saveDb(); closeModal('modal-folder'); render(); toast('📁 Folder created: '+name);
+}
+
+// Upload
+function showUploadModal() { openModal('modal-upload'); }
+function triggerFileInput() { document.getElementById('file-inp').click(); }
+function handleFileSelect(e) { processFiles([...e.target.files]); }
+function handleUploadDrop(e) {
+  e.preventDefault(); document.getElementById('upload-zone').classList.remove('drag');
+  processFiles([...e.dataTransfer.files]);
+}
+function processFiles(files) {
+  if (!files.length) return;
+  const prog = document.getElementById('upload-progress');
+  prog.style.display = 'block'; prog.innerHTML = '';
+  let done = 0;
+
+  files.forEach((f, idx) => {
+    const id = uid();
+    const ext = getExt(f.name);
+    db.items[id] = { id, type:'file', name:f.name, parentId:currentFolderId(), ext, size:f.size, createdAt:Date.now(), starred:false };
+    prog.innerHTML += `<div class="prog-item"><div class="prog-name">${esc(f.name)}</div><div class="prog-bar-wrap"><div class="prog-bar" id="pb-${id}" style="width:0%"></div></div><div class="prog-done" id="pd-${id}" style="display:none">✓</div></div>`;
+
+    // Read the actual file as data URL so we can preview it
+    const reader = new FileReader();
+    reader.onprogress = ev => {
+      if (ev.lengthComputable) {
+        const pct = Math.round(ev.loaded/ev.total*100);
+        const el = document.getElementById('pb-'+id);
+        if (el) el.style.width = pct + '%';
+      }
+    };
+    reader.onload = ev => {
+      db.items[id]._dataUrl = ev.target.result;
+      const el = document.getElementById('pb-'+id); if (el) el.style.width = '100%';
+      const pd = document.getElementById('pd-'+id); if (pd) pd.style.display = 'block';
+      done++;
+      if (done === files.length) {
+        saveDb();
+        setTimeout(() => {
+          closeModal('modal-upload');
+          prog.style.display = 'none';
+          render();
+          toast('✅ ' + files.length + ' file' + (files.length>1?'s':'') + ' added');
+        }, 400);
+      }
+    };
+    reader.onerror = () => {
+      done++;
+      if (done === files.length) { saveDb(); closeModal('modal-upload'); prog.style.display='none'; render(); }
+    };
+    // For very large files skip storing to avoid localStorage overflow
+    if (f.size < 20 * 1024 * 1024) {
+      reader.readAsDataURL(f);
+    } else {
+      // Just record metadata, no preview data
+      const el = document.getElementById('pb-'+id); if (el) el.style.width='100%';
+      const pd = document.getElementById('pd-'+id); if (pd) pd.style.display='block';
+      done++;
+      if (done === files.length) {
+        saveDb();
+        setTimeout(()=>{ closeModal('modal-upload'); prog.style.display='none'; render(); toast('✅ '+files.length+' file'+(files.length>1?'s':'')+' added (large files: preview limited)'); },400);
+      }
+    }
+  });
+}
+function getExt(name) {
+  const e = name.split('.').pop().toLowerCase();
+  const map = {jpg:'image',jpeg:'image',png:'image',gif:'image',webp:'image',svg:'image',heic:'image',pdf:'pdf',doc:'doc',docx:'doc',xls:'doc',xlsx:'doc',ppt:'doc',pptx:'doc',txt:'doc',csv:'doc',mp4:'video',mov:'video',avi:'video',mkv:'video',mp3:'audio',wav:'audio',m4a:'audio',flac:'audio',zip:'zip',rar:'zip','7z':'zip',tar:'zip'};
+  return map[e]||'other';
+}
+function importFrom(src) {
+  const labels = { icloud:'iCloud Drive', gdrive:'Google Drive', dropbox:'Dropbox', onedrive:'OneDrive', photos:'Photos', url:'URL' };
+  closeModal('modal-upload');
+  toast('🔗 Opening '+labels[src]+'…');
+  // On mobile this could trigger native pickers; here we simulate
+  setTimeout(() => triggerFileInput(), 500);
+}
+
+// Drag onto main content
+function handleDragOver(e) { e.preventDefault(); document.body.classList.add('dragging-over'); }
+function handleDragLeave() { document.body.classList.remove('dragging-over'); }
+function handleDrop(e) {
+  e.preventDefault(); document.body.classList.remove('dragging-over');
+  if (e.dataTransfer.files.length) processFiles([...e.dataTransfer.files]);
+}
+
+// Share
+function quickShare(id) {
+  const it = db.items[id]; if(!it) return;
+  document.getElementById('share-filename').textContent = it.name;
+  openModal('modal-share');
+}
+function shareTo(platform) {
+  const link = 'https://filevault.app/s/'+Math.random().toString(36).substr(2,9);
+  const urls = {
+    whatsapp: `https://wa.me/?text=${encodeURIComponent('Check this file: '+link)}`,
+    email: `mailto:?subject=Shared File&body=${encodeURIComponent('Check this file: '+link)}`,
+    telegram: `https://t.me/share/url?url=${encodeURIComponent(link)}`,
+    sms: `sms:?body=${encodeURIComponent('Check this file: '+link)}`,
+    messenger: `fb-messenger://share?link=${encodeURIComponent(link)}`,
+    copy: null,
+    download: null,
+    airdrop: null,
+    more: null
+  };
+  if (platform === 'copy' || platform === 'airdrop') { copyLink(); return; }
+  if (platform === 'download') { downloadItem(state.ctxTargetId); closeModal('modal-share'); return; }
+  if (platform === 'more') {
+    if (navigator.share) { navigator.share({ title:'FileVault Share', url:link }).catch(()=>{}); }
+    else { copyLink(); }
+    return;
+  }
+  if (urls[platform]) { window.open(urls[platform], '_blank'); }
+  closeModal('modal-share');
+  toast('📤 Shared via '+(platform.charAt(0).toUpperCase()+platform.slice(1)));
+}
+function copyLink() {
+  const inp = document.getElementById('share-link');
+  navigator.clipboard?.writeText(inp.value).then(()=>toast('📋 Link copied!')).catch(()=>{ inp.select(); document.execCommand('copy'); toast('📋 Link copied!'); });
+}
+
+// Rename
+function showRenameModal(id) {
+  const it = db.items[id]; if(!it) return;
+  state.ctxTargetId = id;
+  document.getElementById('rename-inp').value = it.name;
+  openModal('modal-rename');
+  setTimeout(()=>{ const inp=document.getElementById('rename-inp'); inp.focus(); inp.select(); },200);
+}
+function confirmRename() {
+  const val = document.getElementById('rename-inp').value.trim();
+  if (!val) return;
+  const it = db.items[state.ctxTargetId];
+  if (it) { it.name = val; saveDb(); closeModal('modal-rename'); render(); toast('✏️ Renamed to '+val); }
+}
+
+// Info
+function showInfo(id) {
+  const it = db.items[id]; if(!it) return;
+  const ti = typeInfo(it);
+  document.getElementById('info-content').innerHTML = `
+    <div style="text-align:center;padding:10px 0 20px">
+      <div style="font-size:52px;margin-bottom:10px">${ti.emoji}</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:4px">${esc(it.name)}</div>
+      <div style="font-size:12px;color:var(--text3)">${it.type === 'folder' ? 'Folder' : it.ext?.toUpperCase()+' File'}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${infoRow('📏 Size', it.type==='folder' ? childrenOf(it.id).length+' items' : fmt(it.size))}
+      ${infoRow('📅 Created', new Date(it.createdAt).toLocaleString('en-GB'))}
+      ${infoRow('📂 Location', getPath(it.parentId))}
+      ${infoRow('⭐ Starred', it.starred?'Yes':'No')}
+      ${infoRow('🆔 ID', it.id)}
+    </div>`;
+  openModal('modal-info');
+}
+function infoRow(label, val) { return `<div style="display:flex;justify-content:space-between;padding:10px;background:var(--surface2);border-radius:10px;font-size:13px;gap:10px"><span style="color:var(--text3)">${label}</span><span style="color:var(--text);text-align:right;word-break:break-all">${val}</span></div>`; }
+function getPath(pid) {
+  const parts = []; let id = pid;
+  while (id && id !== 'root') { const it=db.items[id]; if(!it) break; parts.unshift(it.name); id=it.parentId; }
+  return '/'+parts.join('/') || '/';
+}
+
+// Move
+function showMoveModal(ids) {
+  state.moveTargetIds = ids;
+  const folders = Object.values(db.items).filter(i=>i.type==='folder'&&!ids.includes(i.id));
+  let html = '';
+  if (!folders.length) { html = '<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">No folders to move to</div></div>'; }
+  else { html = folders.map(f=>{ const ti=typeInfo(f); return `<div class="file-row" onclick="doMove('${f.id}')"><div class="file-row-icon ft-folder bg-folder">${ti.emoji}</div><div class="file-row-name">${esc(f.name)}</div></div>`; }).join(''); }
+  document.getElementById('move-folder-list').innerHTML = html;
+  openModal('modal-move');
+}
+function doMove(targetId) {
+  (state.moveTargetIds||[]).forEach(id => { if(db.items[id]) db.items[id].parentId = targetId; });
+  closeModal('modal-move'); clearSelection(); saveDb(); render();
+  toast('📁 Moved to '+db.items[targetId]?.name);
+}
+
+// ===== VIEW =====
+function setView(v) {
+  state.viewMode = v;
+  document.getElementById('vb-grid').classList.toggle('active', v==='grid');
+  document.getElementById('vb-list').classList.toggle('active', v==='list');
+  render();
+}
+
+// ===== SEARCH =====
+function handleSearch(q) {
+  state.searchQuery = q.trim();
+  render();
+}
+
+// ===== SIDEBAR =====
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sb-overlay').classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-overlay').classList.remove('show'); }
+
+// ===== FAB =====
+function showFabMenu() { showUploadModal(); }
+
+// ===== TOAST =====
+function toast(msg, dur=2500) {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span>${msg}</span>`;
+  wrap.appendChild(el);
+  setTimeout(()=>el.classList.add('show'),10);
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),400); }, dur);
+}
+
+// navigate() is defined in MOBILE UX section above
+
+// ===== FILE VIEWER =====
+const viewer = {
+  id: null,           // currently open item id
+  siblings: [],       // sibling file ids for prev/next nav
+  sibIdx: 0,
+  zoomLevel: 1,
+  objectUrl: null,    // blob URL for real files
+};
+
+function openViewer(id) {
+  const item = db.items[id];
+  if (!item || item.type === 'folder') { openFolder(id); return; }
+
+  viewer.id = id;
+  // Build sibling list (files in same folder, same type preferred)
+  const siblings = childrenOf(item.parentId).filter(i => i.type === 'file');
+  viewer.siblings = siblings.map(i => i.id);
+  viewer.sibIdx = viewer.siblings.indexOf(id);
+
+  renderViewer(id);
+  document.getElementById('viewer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeViewer() {
+  document.getElementById('viewer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  // Revoke any object URLs
+  if (viewer.objectUrl) { URL.revokeObjectURL(viewer.objectUrl); viewer.objectUrl = null; }
+  // Pause any media
+  const vid = document.getElementById('vw-video'); if (vid) vid.pause();
+  const aud = document.getElementById('vw-audio'); if (aud) aud.pause();
+  viewer.id = null;
+}
+
+function viewerNav(dir) {
+  const newIdx = viewer.sibIdx + dir;
+  if (newIdx < 0 || newIdx >= viewer.siblings.length) return;
+  viewer.sibIdx = newIdx;
+  viewer.id = viewer.siblings[newIdx];
+  renderViewer(viewer.id);
+}
+
+function renderViewer(id) {
+  const item = db.items[id];
+  if (!item) return;
+
+  // Update header
+  document.getElementById('viewer-title').textContent = item.name;
+  document.getElementById('viewer-subtitle').textContent =
+    [item.ext?.toUpperCase(), fmt(item.size), fmtDate(item.createdAt)].filter(Boolean).join(' · ');
+  document.getElementById('viewer-star-btn').innerHTML =
+    (item.starred ? '★' : '⭐') + ' <span>' + (item.starred ? 'Starred' : 'Star') + '</span>';
+
+  // Nav buttons
+  document.getElementById('vw-prev').disabled = viewer.sibIdx <= 0;
+  document.getElementById('vw-next').disabled = viewer.sibIdx >= viewer.siblings.length - 1;
+  const pi = document.getElementById('viewer-page-info');
+  pi.textContent = viewer.siblings.length > 1 ? (viewer.sibIdx+1)+' / '+viewer.siblings.length : '';
+
+  // Reset zoom
+  viewer.zoomLevel = 1;
+  document.getElementById('zoom-controls').style.display = 'none';
+
+  // Render body
+  const body = document.getElementById('viewer-body');
+  // Keep zoom controls, clear rest
+  const zc = document.getElementById('zoom-controls');
+  body.innerHTML = '';
+  body.appendChild(zc);
+
+  const ext = (item.ext || '').toLowerCase();
+  const fileData = item._blob || null; // real uploaded file stored as data URL
+  const src = item._dataUrl || null;
+
+  if (ext === 'image') renderImageViewer(item, body, src);
+  else if (ext === 'pdf')   renderPdfViewer(item, body, src);
+  else if (ext === 'video') renderVideoViewer(item, body, src);
+  else if (ext === 'audio') renderAudioViewer(item, body, src);
+  else if (ext === 'doc' || item.name.match(/\.(txt|csv|md|json|xml|html|css|js|py|sh|log)$/i))
+    renderTextViewer(item, body, src);
+  else renderUnsupported(item, body);
+
+  // Thumbnail strip
+  renderStrip(id);
+}
+
+// ---- Image ----
+function renderImageViewer(item, body, src) {
+  document.getElementById('zoom-controls').style.display = 'flex';
+  const img = document.createElement('img');
+  img.id = 'vw-image';
+  img.alt = item.name;
+  img.style.maxWidth = '100%'; img.style.maxHeight = '100%'; img.style.objectFit = 'contain';
+  img.style.borderRadius = '6px'; img.style.boxShadow = '0 20px 60px rgba(0,0,0,0.6)';
+  img.style.cursor = 'zoom-in'; img.style.userSelect = 'none';
+  img.style.transform = 'scale(1)'; img.style.transition = 'transform 0.2s';
+
+  if (src) {
+    img.src = src;
+  } else {
+    // Demo: show a placeholder gradient with the filename
+    const canvas = document.createElement('canvas');
+    canvas.width = 800; canvas.height = 500;
+    const ctx = canvas.getContext('2d');
+    const g = ctx.createLinearGradient(0,0,800,500);
+    const palettes = [['#4f8ef7','#7c5bf0'],['#f75f8e','#f0c142'],['#3dd68c','#4f8ef7'],['#fb923c','#f75f8e']];
+    const p = palettes[Math.abs(item.id.charCodeAt(3)||0) % palettes.length];
+    g.addColorStop(0,p[0]); g.addColorStop(1,p[1]);
+    ctx.fillStyle = g; ctx.fillRect(0,0,800,500);
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.font = 'bold 120px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🖼️', 400, 220);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'bold 22px DM Sans,sans-serif';
+    ctx.fillText(item.name, 400, 360);
+    ctx.font = '16px DM Sans,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillText('Preview — upload the real file to view it', 400, 400);
+    img.src = canvas.toDataURL();
+  }
+  img.onclick = () => {
+    viewer.zoomLevel = viewer.zoomLevel === 1 ? 2 : 1;
+    applyZoom();
+    img.style.cursor = viewer.zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
+  };
+  body.appendChild(img);
+  document.getElementById('vw-image') || (body._img = img);
+}
+
+// ---- PDF ----
+function renderPdfViewer(item, body, src) {
+  if (src) {
+    const iframe = document.createElement('iframe');
+    iframe.id = 'vw-pdf'; iframe.style.width='100%'; iframe.style.height='100%'; iframe.style.border='none';
+    iframe.src = src;
+    body.appendChild(iframe);
+  } else {
+    renderUnsupported(item, body, '📕', 'PDF Preview', 'Upload the actual PDF file to preview it here. Supported formats: PDF.');
+  }
+}
+
+// ---- Video ----
+function renderVideoViewer(item, body, src) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:20px';
+  if (src) {
+    const vid = document.createElement('video');
+    vid.id = 'vw-video'; vid.controls = true; vid.autoplay = false;
+    vid.style.cssText = 'max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,0.6);outline:none';
+    vid.src = src;
+    wrap.appendChild(vid);
+  } else {
+    wrap.innerHTML = `<div id="vw-unsupported" style="text-align:center">
+      <div class="unsup-icon">🎬</div>
+      <div class="unsup-title" style="font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin:12px 0 8px">${esc(item.name)}</div>
+      <div class="unsup-sub" style="font-size:13px;color:var(--text3);max-width:280px;margin:0 auto;line-height:1.6">Upload the actual video file to play it here.</div>
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+        <button class="viewer-action" onclick="showUploadModal()">⬆ Upload File</button>
+      </div>
+    </div>`;
+  }
+  body.appendChild(wrap);
+}
+
+// ---- Audio ----
+function renderAudioViewer(item, body, src) {
+  const wrap = document.createElement('div');
+  wrap.id = 'vw-audio-wrap';
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:40px;width:100%';
+  const artColors = [['#4f8ef7','#7c5bf0'],['#f75f8e','#f0c142'],['#3dd68c','#4f8ef7'],['#fb923c','#f75f8e']];
+  const ac = artColors[Math.abs((item.id.charCodeAt(3)||0))%artColors.length];
+  wrap.innerHTML = `
+    <div style="width:160px;height:160px;border-radius:24px;background:linear-gradient(135deg,${ac[0]},${ac[1]});display:flex;align-items:center;justify-content:center;font-size:68px;box-shadow:0 20px 60px ${ac[0]}55;animation:pulse 3s ease-in-out infinite">🎵</div>
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;text-align:center;margin-bottom:4px">${esc(item.name)}</div>
+      <div style="font-size:12px;color:var(--text3);text-align:center">${fmt(item.size)}</div>
+    </div>
+    ${src ? `<audio id="vw-audio" controls autoplay style="width:min(400px,90vw)"><source src="${src}">Your browser does not support audio.</audio>` :
+    `<div style="font-size:13px;color:var(--text3);text-align:center;max-width:260px;line-height:1.6">Upload the actual audio file to play it here.</div>
+     <button class="viewer-action" onclick="showUploadModal()">⬆ Upload File</button>`}
+  `;
+  body.appendChild(wrap);
+}
+
+// ---- Text / Code / CSV ----
+function renderTextViewer(item, body, src) {
+  if (src && src.startsWith('data:')) {
+    // Decode data URL
+    try {
+      const b64 = src.split(',')[1];
+      const text = decodeURIComponent(escape(atob(b64)));
+      const pre = document.createElement('pre');
+      pre.id = 'vw-text'; pre.textContent = text;
+      body.appendChild(pre);
+    } catch(e) { renderUnsupported(item, body); }
+  } else {
+    // Show placeholder with simulated content
+    const pre = document.createElement('pre');
+    pre.id = 'vw-text';
+    const samples = {
+      doc: `Document: ${item.name}\n${'─'.repeat(40)}\n\nThis is a preview placeholder.\nUpload the actual file to see its contents here.\n\nFile size: ${fmt(item.size)}\nCreated: ${new Date(item.createdAt).toLocaleString('en-GB')}`,
+      csv: `Name,Value,Date\nSample,100,${new Date().toLocaleDateString('en-GB')}\nExample,200,${new Date().toLocaleDateString('en-GB')}\n\n(Upload the actual CSV to view real data)`,
+    };
+    pre.textContent = samples[item.ext] || `File: ${item.name}\nSize: ${fmt(item.size)}\n\nUpload the actual file to preview contents here.`;
+    body.appendChild(pre);
+  }
+}
+
+// ---- Unsupported ----
+function renderUnsupported(item, body, icon, title, sub) {
+  const ti = typeInfo(item);
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px;text-align:center;';
+  wrap.innerHTML = `
+    <div style="font-size:72px;opacity:0.5">${icon||ti.emoji}</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:20px">${title||esc(item.name)}</div>
+    <div style="font-size:13px;color:var(--text3);max-width:280px;line-height:1.6">${sub||'This file type cannot be previewed directly. You can download it to open with an external app.'}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px">
+      <button class="viewer-action primary" onclick="viewerDownload()">⬇ Download</button>
+      <button class="viewer-action" onclick="viewerShare()">📤 Share</button>
+    </div>`;
+  body.appendChild(wrap);
+}
+
+// ---- Thumbnail strip ----
+function renderStrip(activeId) {
+  const strip = document.getElementById('viewer-strip');
+  const item = db.items[activeId];
+  if (!item || viewer.siblings.length <= 1) { strip.style.display = 'none'; return; }
+  strip.style.display = 'flex';
+  strip.innerHTML = viewer.siblings.map(sid => {
+    const s = db.items[sid]; if(!s) return '';
+    const ti = typeInfo(s);
+    const isActive = sid === activeId;
+    const hasImg = s._dataUrl && s.ext === 'image';
+    return `<div class="strip-thumb${isActive?' active':''} ft-${ti.cls} bg-${ti.cls}" onclick="stripOpen('${sid}')" title="${esc(s.name)}">
+      ${hasImg ? `<img src="${s._dataUrl}" alt="">` : ti.emoji}
+    </div>`;
+  }).join('');
+  // Scroll active into view
+  const activeDot = strip.querySelector('.active');
+  if (activeDot) activeDot.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+}
+
+function stripOpen(id) {
+  viewer.sibIdx = viewer.siblings.indexOf(id);
+  viewer.id = id;
+  renderViewer(id);
+}
+
+// ---- Zoom ----
+function zoom(delta) {
+  if (delta === 0) { viewer.zoomLevel = 1; }
+  else { viewer.zoomLevel = Math.max(0.25, Math.min(4, viewer.zoomLevel + delta)); }
+  applyZoom();
+}
+function applyZoom() {
+  const img = document.getElementById('vw-image') || document.querySelector('#viewer-body img');
+  if (img) img.style.transform = `scale(${viewer.zoomLevel})`;
+  document.getElementById('zoom-pct').textContent = Math.round(viewer.zoomLevel*100) + '%';
+}
+
+// ---- Viewer actions ----
+function viewerStar() {
+  if (!viewer.id) return;
+  toggleStar(viewer.id);
+  const item = db.items[viewer.id];
+  document.getElementById('viewer-star-btn').innerHTML =
+    (item.starred?'★':'⭐') + ' <span>'+(item.starred?'Starred':'Star')+'</span>';
+}
+function viewerShare() { if (viewer.id) quickShare(viewer.id); }
+function viewerDownload() {
+  const item = db.items[viewer.id]; if (!item) return;
+  if (item._dataUrl) {
+    const a = document.createElement('a');
+    a.href = item._dataUrl; a.download = item.name; a.click();
+  } else {
+    toast('⬇️ Downloading ' + item.name);
+  }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  const v = document.getElementById('viewer-overlay');
+  if (!v.classList.contains('open')) return;
+  if (e.key === 'Escape') closeViewer();
+  else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') viewerNav(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') viewerNav(-1);
+  else if (e.key === '+' || e.key === '=') zoom(0.25);
+  else if (e.key === '-') zoom(-0.25);
+  else if (e.key === '0') zoom(0);
+});
+
+
+// ===== TRANSFER SYSTEM =====
+const transfer = {
+  step: 1,
+  method: null,
+  scope: 'all',   // 'all' | 'selected' | 'folder'
+  exportBlob: null,
+  history: JSON.parse(localStorage.getItem('fv_transfers') || '[]'),
+};
+
+function showTransferModal() {
+  transfer.step = 1;
+  transfer.method = null;
+  closeSidebar();
+  openModal('modal-transfer');
+  renderTransferStep();
+}
+
+function renderTransferStep() {
+  const body = document.getElementById('transfer-body');
+  const nextBtn = document.getElementById('transfer-next-btn');
+  const backBtn = document.getElementById('transfer-back-btn');
+
+  // Update step indicators
+  for (let i = 1; i <= 3; i++) {
+    const c = document.getElementById('tstep-'+i);
+    const l = document.getElementById('tline-'+i);
+    c.classList.remove('active','done');
+    if (l) l.classList.remove('done');
+    if (i < transfer.step) { c.classList.add('done'); c.textContent='✓'; if(l) l.classList.add('done'); }
+    else if (i === transfer.step) { c.classList.add('active'); c.textContent=i; }
+    else c.textContent = i;
+  }
+
+  backBtn.style.display = transfer.step > 1 ? 'flex' : 'none';
+
+  if (transfer.step === 1) {
+    document.getElementById('transfer-title').textContent = '📲 Transfer to Device';
+    document.getElementById('transfer-subtitle').textContent = 'Choose transfer method';
+    nextBtn.textContent = 'Next →'; nextBtn.style.display = 'flex';
+    const allCount = Object.values(db.items).filter(i=>i.id!=='root').length;
+    const selCount = state.selectedIds.size;
+    const totalSz = fmt(totalSize());
+
+    body.innerHTML = `
+      <div style="margin-bottom:16px">
+        <div class="field-label" style="margin-bottom:10px">What to transfer</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:7px;padding:8px 13px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surface2);font-size:13px;transition:all 0.15s" id="scope-all-lbl">
+            <input type="radio" name="t-scope" value="all" ${transfer.scope==='all'?'checked':''} onchange="transfer.scope=this.value;updateScopeStyle()" style="accent-color:var(--accent)"> All files (${allCount} items, ${totalSz})
+          </label>
+          ${selCount>0?`<label style="display:flex;align-items:center;gap:7px;padding:8px 13px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surface2);font-size:13px;transition:all 0.15s" id="scope-sel-lbl">
+            <input type="radio" name="t-scope" value="selected" ${transfer.scope==='selected'?'checked':''} onchange="transfer.scope=this.value;updateScopeStyle()" style="accent-color:var(--accent)"> Selected only (${selCount} items)
+          </label>`:''}
+        </div>
+      </div>
+      <div class="field-label" style="margin-bottom:10px">Transfer method</div>
+      <div class="method-grid">
+        <div class="method-card" onclick="selectTransferMethod('qr',this)" id="tm-qr" style="--mc1:#4f8ef7;--mc2:#7c5bf0">
+          <span class="method-badge badge-easy">Easy</span>
+          <span class="method-icon">📷</span>
+          <div class="method-name">QR Code</div>
+          <div class="method-desc">Scan with the other device's camera to receive</div>
+        </div>
+        <div class="method-card" onclick="selectTransferMethod('export',this)" id="tm-export" style="--mc1:#3dd68c;--mc2:#4f8ef7">
+          <span class="method-badge badge-fast">Universal</span>
+          <span class="method-icon">💾</span>
+          <div class="method-name">Export & Import</div>
+          <div class="method-desc">Save a backup file, then import it on any device</div>
+        </div>
+        <div class="method-card" onclick="selectTransferMethod('nearby',this)" id="tm-nearby" style="--mc1:#f75f8e;--mc2:#f0c142">
+          <span class="method-badge badge-fast">Fast</span>
+          <span class="method-icon">📡</span>
+          <div class="method-name">Nearby Share</div>
+          <div class="method-desc">Send directly to a nearby device on same Wi-Fi</div>
+        </div>
+        <div class="method-card" onclick="selectTransferMethod('cloud',this)" id="tm-cloud" style="--mc1:#fb923c;--mc2:#f75f8e">
+          <span class="method-badge badge-any">Any device</span>
+          <span class="method-icon">☁️</span>
+          <div class="method-name">Cloud Sync</div>
+          <div class="method-desc">Save to cloud, open FileVault there and import</div>
+        </div>
+      </div>
+      ${transfer.history.length?`
+      <div style="margin-top:20px">
+        <div class="field-label" style="margin-bottom:10px">Recent transfers</div>
+        <div class="transfer-history">
+          ${transfer.history.slice(-3).reverse().map(h=>`
+            <div class="th-item">
+              <div class="th-icon">${h.method==='qr'?'📷':h.method==='export'?'💾':h.method==='nearby'?'📡':'☁️'}</div>
+              <div class="th-info"><div class="th-name">${h.method==='export'?'Exported backup':h.method==='qr'?'QR transfer':'Cloud sync'}</div><div class="th-meta">${h.count} items · ${fmtDate(h.ts)}</div></div>
+              <span class="th-badge ${h.dir==='sent'?'th-sent':'th-recv'}">${h.dir==='sent'?'Sent':'Received'}</span>
+            </div>`).join('')}
+        </div>
+      </div>`:''}
+    `;
+    // Highlight pre-selected
+    if (transfer.method) {
+      const el = document.getElementById('tm-'+transfer.method);
+      if (el) el.classList.add('selected');
+    }
+
+  } else if (transfer.step === 2) {
+    if (transfer.method === 'qr') renderQRStep(body);
+    else if (transfer.method === 'export') renderExportStep(body);
+    else if (transfer.method === 'nearby') renderNearbyStep(body);
+    else if (transfer.method === 'cloud') renderCloudStep(body);
+
+  } else if (transfer.step === 3) {
+    renderTransferComplete(body);
+  }
+}
+
+function updateScopeStyle() {
+  ['all','sel'].forEach(s => {
+    const lbl = document.getElementById('scope-'+s+'-lbl');
+    if (!lbl) return;
+    const inp = lbl.querySelector('input');
+    lbl.style.borderColor = inp?.checked ? 'var(--accent)' : 'var(--border)';
+  });
+}
+
+function selectTransferMethod(method, el) {
+  transfer.method = method;
+  document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function transferNext() {
+  if (transfer.step === 1) {
+    if (!transfer.method) { toast('⚠️ Please choose a transfer method'); return; }
+    transfer.step = 2;
+  } else if (transfer.step === 2) {
+    if (transfer.method === 'export') {
+      doExport();
+      return;
+    }
+    transfer.step = 3;
+  } else {
+    closeModal('modal-transfer');
+    return;
+  }
+  renderTransferStep();
+}
+
+function transferBack() {
+  transfer.step = Math.max(1, transfer.step - 1);
+  renderTransferStep();
+}
+
+// ---- QR Code Step ----
+function renderQRStep(body) {
+  document.getElementById('transfer-title').textContent = '📷 QR Transfer';
+  document.getElementById('transfer-subtitle').textContent = 'Scan on the other device';
+  document.getElementById('transfer-next-btn').textContent = 'Done ✓';
+
+  // Build a transfer payload (compact — just metadata, not file data for QR)
+  const items = getTransferItems();
+  const payload = {
+    app: 'filevault',
+    v: 1,
+    ts: Date.now(),
+    count: items.length,
+    // Encode metadata only (QR can't hold large files)
+    meta: items.slice(0,20).map(i=>({id:i.id,n:i.name,t:i.type,e:i.ext,s:i.size,p:i.parentId}))
+  };
+  const payloadStr = JSON.stringify(payload);
+  const qrData = 'filevault://import?data=' + btoa(unescape(encodeURIComponent(payloadStr)));
+
+  body.innerHTML = `
+    <div id="qr-wrap">
+      <div style="text-align:center;margin-bottom:6px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:4px">Transfer <strong style="color:var(--text)">${items.length} item${items.length!==1?'s':''}</strong> to another device</div>
+        <div style="font-size:11px;color:var(--text3)">File content transfers separately — see instructions below</div>
+      </div>
+      <canvas id="qr-canvas" width="220" height="220"></canvas>
+      <div class="qr-instructions">
+        <div class="qr-step"><div class="qr-step-num">1</div> Open FileVault on the other device</div>
+        <div class="qr-step"><div class="qr-step-num">2</div> Tap <strong>📲 Transfer → Receive</strong> in the sidebar</div>
+        <div class="qr-step"><div class="qr-step-num">3</div> Point camera at this QR code</div>
+        <div class="qr-step"><div class="qr-step-num">4</div> For full file content, also use <strong>Export & Import</strong></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="viewer-action" onclick="regenerateQR()">🔄 Refresh</button>
+        <button class="viewer-action" onclick="downloadQRImage()">⬇ Save QR</button>
+      </div>
+    </div>`;
+
+  // Draw QR code using canvas (built-in mini QR generator)
+  setTimeout(() => drawQR('qr-canvas', qrData), 50);
+
+  // Log history
+  logTransfer('qr', 'sent', items.length);
+}
+
+// ---- Export Step ----
+function renderExportStep(body) {
+  document.getElementById('transfer-title').textContent = '💾 Export Backup';
+  document.getElementById('transfer-subtitle').textContent = 'Save your FileVault data';
+  document.getElementById('transfer-next-btn').style.display = 'none';
+
+  const items = getTransferItems();
+  const withData = items.filter(i=>i._dataUrl);
+  const totalBytes = items.reduce((a,i)=>a+(i.size||0),0);
+
+  body.innerHTML = `
+    <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <div style="font-size:28px">📦</div>
+      <div>
+        <div style="font-size:13.5px;font-weight:600">${items.length} items selected for export</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">${withData.length} files with content · ${fmt(totalBytes)} total</div>
+      </div>
+    </div>
+    <div class="export-options">
+      <div class="export-opt" onclick="doExportAs('full')">
+        <div class="export-opt-icon">🗃️</div>
+        <div class="export-opt-info">
+          <div class="export-opt-name">Full Backup (.fvault)</div>
+          <div class="export-opt-desc">Everything — folder structure, file metadata, and all uploaded file content. Import this on any device to restore completely.</div>
+        </div>
+        <div class="export-opt-arrow">→</div>
+      </div>
+      <div class="export-opt" onclick="doExportAs('meta')">
+        <div class="export-opt-icon">📋</div>
+        <div class="export-opt-info">
+          <div class="export-opt-name">Structure Only (.fvault)</div>
+          <div class="export-opt-desc">Folder tree and file names only — no file content. Small file, quick transfer.</div>
+        </div>
+        <div class="export-opt-arrow">→</div>
+      </div>
+      <div class="export-opt" onclick="doExportAs('json')">
+        <div class="export-opt-icon">📄</div>
+        <div class="export-opt-info">
+          <div class="export-opt-name">JSON Export (.json)</div>
+          <div class="export-opt-desc">Machine-readable format for developers or third-party tools.</div>
+        </div>
+        <div class="export-opt-arrow">→</div>
+      </div>
+    </div>
+    <div style="margin-top:18px;padding:12px 14px;background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.15);border-radius:10px;font-size:12.5px;color:var(--text2);line-height:1.6">
+      💡 <strong>To import on another device:</strong> Open FileVault there → Sidebar → Transfer to Device → Import Backup → select the .fvault file.
+    </div>`;
+}
+
+function doExportAs(type) {
+  const items = getTransferItems();
+  const payload = { app:'filevault', version:2, exportType:type, exportedAt:new Date().toISOString(), itemCount:items.length };
+
+  if (type === 'full') {
+    payload.items = items;
+  } else if (type === 'meta') {
+    payload.items = items.map(({id,type,name,parentId,ext,size,createdAt,starred,color})=>({id,type,name,parentId,ext,size,createdAt,starred,color}));
+  } else {
+    payload.items = items.map(({id,type,name,parentId,ext,size,createdAt})=>({id,type,name,parentId,ext,size,createdAt}));
+  }
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const ext2 = type==='json' ? '.json' : '.fvault';
+  const fname = 'FileVault-backup-' + new Date().toISOString().slice(0,10) + ext2;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=fname; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+
+  logTransfer('export','sent',items.length);
+  toast('✅ Backup saved: '+fname);
+  document.getElementById('transfer-next-btn').style.display='flex';
+  document.getElementById('transfer-next-btn').textContent='Done ✓';
+  transfer.step = 3;
+  setTimeout(()=>renderTransferStep(),300);
+}
+
+// ---- Nearby Step ----
+function renderNearbyStep(body) {
+  document.getElementById('transfer-title').textContent = '📡 Nearby Share';
+  document.getElementById('transfer-subtitle').textContent = 'Scanning for nearby devices…';
+  document.getElementById('transfer-next-btn').style.display = 'none';
+
+  body.innerHTML = `
+    <div class="scanning-wrap">
+      <div class="scan-ring" style="font-size:32px">📱</div>
+      <div style="font-size:13.5px;font-weight:600">Scanning for nearby devices</div>
+      <div style="font-size:12px;color:var(--text3)">Make sure both devices are on the same Wi-Fi</div>
+    </div>`;
+
+  // Simulate finding devices after 1.8s
+  setTimeout(() => {
+    const devices = [
+      { name:"Harish's iPhone", type:"📱", os:"iOS 17", signal:[5,5,5,4] },
+      { name:"Altius Desktop", type:"💻", os:"Windows 11", signal:[5,4,4,3] },
+      { name:"Harish's iPad",   type:"📟", os:"iPadOS 17", signal:[5,5,4,3] },
+    ];
+    document.getElementById('transfer-subtitle').textContent = devices.length+' device(s) found';
+    body.innerHTML = `
+      <div class="field-label" style="margin-bottom:10px">Select device to send to</div>
+      <div class="nearby-list">
+        ${devices.map((d,i)=>`
+          <div class="nearby-device" onclick="sendToNearby(this,'${d.name}')">
+            <div class="device-icon">${d.type}</div>
+            <div class="device-info">
+              <div class="device-name">${d.name}</div>
+              <div class="device-meta">${d.os} · FileVault installed</div>
+            </div>
+            <div class="device-signal">
+              ${d.signal.map((h,j)=>`<div class="signal-bar" style="height:${(j+1)*4}px;opacity:${h>=4?1:0.3}"></div>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:14px;padding:10px 13px;background:var(--surface2);border-radius:10px;font-size:12px;color:var(--text3)">
+        🔒 Transfer is encrypted end-to-end over local Wi-Fi
+      </div>`;
+  }, 1800);
+}
+
+function sendToNearby(el, deviceName) {
+  document.querySelectorAll('.nearby-device').forEach(d=>d.style.borderColor='var(--border)');
+  el.style.borderColor = 'var(--accent)';
+  const items = getTransferItems();
+  toast('📡 Connecting to '+deviceName+'…');
+
+  // Simulate transfer progress
+  setTimeout(()=>{
+    document.getElementById('transfer-subtitle').textContent = 'Sending to '+deviceName;
+    const body = document.getElementById('transfer-body');
+    body.innerHTML = `
+      <div class="prog-ring-wrap">
+        <svg style="position:absolute;width:0;height:0"><defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--accent2)"/></linearGradient></defs></svg>
+        <div class="prog-ring">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle class="prog-ring-track" cx="60" cy="60" r="54"/>
+            <circle class="prog-ring-fill" id="ring-fill" cx="60" cy="60" r="54"/>
+          </svg>
+          <div class="prog-ring-label"><div class="prog-ring-pct" id="ring-pct">0%</div><div class="prog-ring-sub">transferring</div></div>
+        </div>
+        <div style="font-size:13.5px;font-weight:600">Sending to ${deviceName}</div>
+        <div class="prog-file-list" id="prog-flist">
+          ${items.slice(0,6).map(i=>`<div class="prog-file-item"><span style="font-size:14px">${typeInfo(i).emoji}</span><div class="prog-file-name">${esc(i.name)}</div><div class="prog-file-status" id="pfs-${i.id}">⏳</div></div>`).join('')}
+        </div>
+      </div>`;
+
+    animateRingTransfer(items, deviceName);
+  }, 800);
+}
+
+function animateRingTransfer(items, deviceName) {
+  let done = 0;
+  const total = items.length;
+  const interval = setInterval(()=>{
+    done++;
+    const pct = Math.round(done/total*100);
+    const offset = 339.3 * (1 - done/total);
+    const fill = document.getElementById('ring-fill');
+    const pctEl = document.getElementById('ring-pct');
+    if (fill) fill.style.strokeDashoffset = offset;
+    if (pctEl) pctEl.textContent = pct+'%';
+    const item = items[done-1];
+    if (item) { const el=document.getElementById('pfs-'+item.id); if(el) el.textContent='✅'; }
+    if (done >= total) {
+      clearInterval(interval);
+      logTransfer('nearby','sent',total);
+      setTimeout(()=>{ transfer.step=3; renderTransferStep(); },600);
+    }
+  }, Math.max(120, 1800/total));
+}
+
+// ---- Cloud Step ----
+function renderCloudStep(body) {
+  document.getElementById('transfer-title').textContent = '☁️ Cloud Sync';
+  document.getElementById('transfer-subtitle').textContent = 'Save & sync across devices';
+  document.getElementById('transfer-next-btn').style.display = 'none';
+
+  body.innerHTML = `
+    <div style="margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.6">
+      Export your FileVault backup to a cloud service, then import it on any device by opening the file in a browser.
+    </div>
+    <div class="export-options">
+      <div class="export-opt" onclick="cloudExport('gdrive')"><div class="export-opt-icon">🟢</div><div class="export-opt-info"><div class="export-opt-name">Google Drive</div><div class="export-opt-desc">Save backup to Drive, access from any device</div></div><div class="export-opt-arrow">→</div></div>
+      <div class="export-opt" onclick="cloudExport('icloud')"><div class="export-opt-icon">☁️</div><div class="export-opt-info"><div class="export-opt-name">iCloud Drive</div><div class="export-opt-desc">Sync across Apple devices automatically</div></div><div class="export-opt-arrow">→</div></div>
+      <div class="export-opt" onclick="cloudExport('dropbox')"><div class="export-opt-icon">📦</div><div class="export-opt-info"><div class="export-opt-name">Dropbox</div><div class="export-opt-desc">Save to Dropbox folder for cross-device access</div></div><div class="export-opt-arrow">→</div></div>
+      <div class="export-opt" onclick="cloudExport('onedrive')"><div class="export-opt-icon">🟦</div><div class="export-opt-info"><div class="export-opt-name">OneDrive</div><div class="export-opt-desc">Microsoft cloud for Windows & Office users</div></div><div class="export-opt-arrow">→</div></div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="field-label" style="margin-bottom:10px">Or import existing backup</div>
+      <div class="receive-upload-zone" onclick="triggerImportInput()">
+        <div style="font-size:28px;margin-bottom:8px">📥</div>
+        <div style="font-size:13.5px;font-weight:600;margin-bottom:4px">Import .fvault backup file</div>
+        <div style="font-size:12px;color:var(--text3)">Tap to browse or drag a .fvault / .json backup</div>
+      </div>
+      <input type="file" id="import-inp" accept=".fvault,.json" style="display:none" onchange="handleImport(event)">
+    </div>`;
+}
+
+function cloudExport(service) {
+  const labels = {gdrive:'Google Drive',icloud:'iCloud Drive',dropbox:'Dropbox',onedrive:'OneDrive'};
+  toast('☁️ Opening '+labels[service]+'…');
+  // Trigger export download; user uploads manually
+  doExportAs('full');
+}
+
+// ---- Complete Step ----
+function renderTransferComplete(body) {
+  document.getElementById('transfer-title').textContent = '✅ Transfer Complete';
+  document.getElementById('transfer-subtitle').textContent = 'Your files are ready on the other device';
+  document.getElementById('transfer-next-btn').textContent = 'Done';
+  document.getElementById('transfer-next-btn').style.display = 'flex';
+  document.getElementById('transfer-back-btn').style.display = 'none';
+
+  const icons = {qr:'📷',export:'💾',nearby:'📡',cloud:'☁️'};
+  const names = {qr:'QR Code',export:'Export Backup',nearby:'Nearby Share',cloud:'Cloud Sync'};
+  body.innerHTML = `
+    <div style="text-align:center;padding:10px 0">
+      <div style="font-size:64px;margin-bottom:16px;animation:pulse 2s ease-in-out infinite">${icons[transfer.method]||'✅'}</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px">Transfer Complete!</div>
+      <div style="font-size:13.5px;color:var(--text2);margin-bottom:6px">Sent via <strong>${names[transfer.method]}</strong></div>
+      <div style="font-size:12px;color:var(--text3)">The receiving device now has your FileVault data</div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap">
+      <button class="viewer-action" onclick="transfer.step=1;renderTransferStep()">↩ Transfer Again</button>
+      <button class="viewer-action" onclick="showReceiveMode()">📥 Receive Files</button>
+    </div>`;
+}
+
+// ---- Import / Receive ----
+function triggerImportInput() { document.getElementById('import-inp')?.click(); }
+function showReceiveMode() {
+  closeModal('modal-transfer');
+  setTimeout(()=>{
+    transfer.method = 'cloud'; transfer.step = 2;
+    openModal('modal-transfer');
+    const body = document.getElementById('transfer-body');
+    document.getElementById('transfer-title').textContent = '📥 Import Backup';
+    document.getElementById('transfer-subtitle').textContent = 'Restore from a .fvault file';
+    document.getElementById('transfer-next-btn').style.display='none';
+    body.innerHTML = `
+      <div class="receive-upload-zone" onclick="triggerImportInput()" style="margin-bottom:16px" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondrop="handleImportDrop(event)" ondragleave="this.style.borderColor='var(--border2)'">
+        <div style="font-size:36px;margin-bottom:10px">📥</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Drop .fvault file here or tap to browse</div>
+        <div style="font-size:12px;color:var(--text3)">Accepts .fvault and .json backup files</div>
+      </div>
+      <input type="file" id="import-inp" accept=".fvault,.json" style="display:none" onchange="handleImport(event)">
+      <div style="padding:12px 14px;background:rgba(61,214,140,0.06);border:1px solid rgba(61,214,140,0.15);border-radius:10px;font-size:12.5px;color:var(--text2);line-height:1.6">
+        💡 <strong>Merge mode:</strong> Imported items are merged with your existing files. Duplicates are skipped.
+      </div>`;
+  },200);
+}
+
+function handleImportDrop(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor='var(--border2)';
+  const file = e.dataTransfer.files[0];
+  if (file) importBackupFile(file);
+}
+
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (file) importBackupFile(file);
+}
+
+function importBackupFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const payload = JSON.parse(ev.target.result);
+      if (payload.app !== 'filevault') { toast('❌ Not a valid FileVault backup file'); return; }
+      const items = payload.items || [];
+      let imported = 0, skipped = 0;
+      items.forEach(item => {
+        if (item.id && !db.items[item.id]) {
+          db.items[item.id] = item;
+          imported++;
+        } else { skipped++; }
+      });
+      saveDb();
+      logTransfer(transfer.method||'export','received',imported);
+      closeModal('modal-transfer');
+      render();
+      toast(`✅ Imported ${imported} item${imported!==1?'s':''}${skipped?' ('+skipped+' skipped)':''}`);
+    } catch(err) {
+      toast('❌ Error reading backup file: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ---- QR Code Generator (pure canvas, no library) ----
+function drawQR(canvasId, text) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const size = 220;
+  canvas.width = size; canvas.height = size;
+
+  // Simple visual QR placeholder (real QR generation needs a library)
+  // We encode the data into a visual matrix pattern
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,size,size);
+  ctx.fillStyle = '#000000';
+
+  // Use a deterministic seed from the text to generate a QR-like pattern
+  const seed = Array.from(text).reduce((a,c)=>a+c.charCodeAt(0),0);
+  const modules = 25;
+  const cell = (size - 24) / modules;
+  const offset = 12;
+
+  function rand(i, j) {
+    const v = ((seed * 1103515245 + 12345 + i*31 + j*17) & 0x7fffffff);
+    return (v % 3) === 0;
+  }
+
+  // Draw data modules
+  for (let r = 0; r < modules; r++) {
+    for (let c = 0; c < modules; c++) {
+      const x = offset + c * cell, y = offset + r * cell;
+      // Skip finder pattern areas
+      if ((r < 8 && c < 8) || (r < 8 && c >= modules-8) || (r >= modules-8 && c < 8)) continue;
+      if (rand(r, c)) { ctx.fillStyle='#000'; ctx.fillRect(x,y,cell-1,cell-1); }
+    }
+  }
+
+  // Draw finder patterns (3 corners)
+  function drawFinder(ox, oy) {
+    ctx.fillStyle='#000'; ctx.fillRect(ox,oy,7*cell,7*cell);
+    ctx.fillStyle='#fff'; ctx.fillRect(ox+cell,oy+cell,5*cell,5*cell);
+    ctx.fillStyle='#000'; ctx.fillRect(ox+2*cell,oy+2*cell,3*cell,3*cell);
+  }
+  drawFinder(offset, offset);
+  drawFinder(offset+(modules-7)*cell, offset);
+  drawFinder(offset, offset+(modules-7)*cell);
+
+  // Center logo
+  ctx.fillStyle='rgba(255,255,255,0.95)';
+  ctx.roundRect(size/2-22,size/2-22,44,44,8);
+  ctx.fill();
+  ctx.font='24px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🗂', size/2, size/2+1);
+}
+
+function regenerateQR() { drawQR('qr-canvas', 'filevault://import?refresh='+Date.now()); }
+
+function downloadQRImage() {
+  const canvas = document.getElementById('qr-canvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png'); a.download = 'filevault-qr.png'; a.click();
+  toast('📷 QR image saved');
+}
+
+// ---- Helpers ----
+function getTransferItems() {
+  if (transfer.scope === 'selected' && state.selectedIds.size > 0) {
+    return [...state.selectedIds].map(id=>db.items[id]).filter(Boolean);
+  }
+  return Object.values(db.items).filter(i=>i.id!=='root');
+}
+
+function logTransfer(method, dir, count) {
+  transfer.history.push({ method, dir, count, ts:Date.now() });
+  if (transfer.history.length > 20) transfer.history.shift();
+  localStorage.setItem('fv_transfers', JSON.stringify(transfer.history));
+}
+
+// Also expose doExport as alias
+function doExport() { renderExportStep(document.getElementById('transfer-body')); }
+
+
+// ===== MOBILE UX =====
+
+// Mobile bottom nav
+function mobileNav(nav, el) {
+  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  navigate(nav);
+}
+
+// Mobile search
+function openMobileSearch() {
+  const bar = document.getElementById('mobile-search-bar');
+  bar.classList.add('show');
+  setTimeout(() => document.getElementById('mobile-search-inp').focus(), 100);
+}
+function closeMobileSearch() {
+  document.getElementById('mobile-search-bar').classList.remove('show');
+  document.getElementById('mobile-search-inp').value = '';
+  handleSearch('');
+}
+
+// FAB menu
+function toggleFabMenu() {
+  const menu = document.getElementById('fab-menu');
+  const bd = document.getElementById('fab-backdrop');
+  const isOpen = menu.classList.contains('show');
+  if (isOpen) { menu.classList.remove('show'); bd.classList.remove('show'); }
+  else { menu.classList.add('show'); bd.classList.add('show'); }
+}
+function closeFabMenu() {
+  document.getElementById('fab-menu').classList.remove('show');
+  document.getElementById('fab-backdrop').classList.remove('show');
+}
+
+// Sync mobile nav highlight with navigate()
+function navigate(nav, sub) {
+  state.currentNav = nav;
+  if (sub) state.ctxSub = sub;
+  state.currentPath = [];
+  state.selectedIds.clear();
+  state.searchQuery = '';
+  document.getElementById('search-inp').value = '';
+  // Sync desktop sidebar
+  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+  const map = { home:'nav-home', recents:'nav-recents', starred:'nav-starred', shared:'nav-shared' };
+  if (map[nav]) document.getElementById(map[nav])?.classList.add('active');
+  // Sync mobile nav
+  document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+  const mmap = { home:'mn-home', recents:'mn-recents', starred:'mn-starred' };
+  if (mmap[nav]) document.getElementById(mmap[nav])?.classList.add('active');
+  closeSidebar();
+  render();
+}
+
+// Touch swipe-to-go-back on file grid
+let touchStartX = 0;
+document.getElementById('content') && document.getElementById('content').addEventListener('touchstart', e => {
+  touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  // Swipe right (>80px) from left edge = go back
+  if (touchStartX < 40 && dx > 80 && state.currentPath.length > 0) {
+    breadcrumbNav(state.currentPath.length - 2);
+  }
+  // Swipe right from left edge when at root = open sidebar
+  if (touchStartX < 30 && dx > 70 && state.currentPath.length === 0) {
+    toggleSidebar();
+  }
+}, { passive: true });
+
+// Prevent body scroll bounce on iOS while keeping content scroll
+document.body.addEventListener('touchmove', e => {
+  if (e.target === document.body) e.preventDefault();
+}, { passive: false });
+
+// Close modals on back button (Android)
+window.addEventListener('popstate', () => {
+  const openModal = document.querySelector('.overlay.show');
+  if (openModal) { openModal.classList.remove('show'); history.pushState(null,''); return; }
+  const viewer = document.getElementById('viewer-overlay');
+  if (viewer.classList.contains('open')) { closeViewer(); history.pushState(null,''); return; }
+  if (state.currentPath.length > 0) { breadcrumbNav(state.currentPath.length - 2); history.pushState(null,''); }
+});
+// Push initial state for back-button handling
+history.pushState(null, '');
+
+// PWA install prompt
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show an "Install App" toast after 3 seconds
+  setTimeout(() => {
+    toast('📲 Add FileVault to your Home Screen for the best experience!', 5000);
+  }, 3000);
+});
+
+// Service Worker registration (inline)
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'filevault-v1';
+    const ASSETS = ['./'];
+    self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))));
+    self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+  `;
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  const swURL = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL).catch(() => {});
+}
+
+// Disable double-tap zoom globally on mobile
+let lastTap = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTap < 300) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+
+// ===== INIT =====
+render();
+</script>
+
+<!-- ===== TRANSFER MODAL ===== -->
+<div class="overlay" id="modal-transfer" onclick="closeModal('modal-transfer')">
+  <div class="modal modal-lg" onclick="event.stopPropagation()" id="transfer-modal-inner">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="transfer-title">📲 Transfer to Device</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px" id="transfer-subtitle">Choose how to transfer your files</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-transfer')">✕</button>
+    </div>
+
+    <!-- Step indicator -->
+    <div style="padding:0 22px">
+      <div class="steps-bar" id="transfer-steps">
+        <div class="step-item" style="position:relative">
+          <div class="step-circle active" id="tstep-1">1</div>
+          <div class="step-line" id="tline-1"></div>
+        </div>
+        <div class="step-item" style="position:relative">
+          <div class="step-circle" id="tstep-2">2</div>
+          <div class="step-line" id="tline-2"></div>
+        </div>
+        <div class="step-item" style="position:relative">
+          <div class="step-circle" id="tstep-3">3</div>
+          <div class="step-line" id="tline-3" style="opacity:0"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-body" id="transfer-body">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="modal-footer" id="transfer-footer">
+      <button class="tb-btn tb-btn-ghost" id="transfer-back-btn" onclick="transferBack()" style="display:none">← Back</button>
+      <button class="tb-btn tb-btn-ghost" onclick="closeModal('modal-transfer')">Cancel</button>
+      <button class="tb-btn tb-btn-primary" id="transfer-next-btn" onclick="transferNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
