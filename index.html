@@ -608,11 +608,11 @@ body.drag-over #content { background:rgba(79,142,247,.03); }
 
 <!-- FOLDER MODAL -->
 <div class="overlay" id="modal-folder" onclick="closeModal('modal-folder')">
-  <div class="modal" onclick="event.stopPropagation()">
+  <div class="modal" onclick="event.stopPropagation()" style="max-height:none;height:auto;">
     <div class="m-hd"><div class="m-tt">📁 New Folder</div><button class="m-x" onclick="closeModal('modal-folder')">✕</button></div>
-    <div class="m-body">
+    <div class="m-body" style="overflow:visible;">
       <div class="f-grp"><div class="f-lbl">Folder Name</div><input class="f-inp" id="folder-name-inp" type="text" placeholder="e.g. Work Documents" onkeydown="if(event.key==='Enter')createFolder()"></div>
-      <div class="f-grp">
+      <div class="f-grp" style="margin-bottom:20px;">
         <div class="f-lbl">Color</div>
         <div class="cpick">
           <div class="cpdot on"  style="background:#f0c142" onclick="selectColor(this,'gold')"></div>
@@ -623,10 +623,11 @@ body.drag-over #content { background:rgba(79,142,247,.03); }
           <div class="cpdot"     style="background:#fb923c" onclick="selectColor(this,'orange')"></div>
         </div>
       </div>
-    </div>
-    <div class="m-foot">
-      <button class="tb-btn tb-gh" onclick="closeModal('modal-folder')">Cancel</button>
-      <button class="tb-btn tb-pr" onclick="createFolder()">Create</button>
+      <!-- Buttons INSIDE body — always visible, never clipped -->
+      <div style="display:flex;gap:10px;padding-bottom:max(16px,var(--sb));">
+        <button class="tb-btn tb-gh" onclick="closeModal('modal-folder')" style="flex:1;padding:15px;font-size:16px;border:1.5px solid var(--bdr2);border-radius:13px;">Cancel</button>
+        <button class="tb-btn tb-pr" onclick="createFolder()" style="flex:1;padding:15px;font-size:16px;border-radius:13px;font-weight:700;">✓ Create</button>
+      </div>
     </div>
   </div>
 </div>
@@ -695,12 +696,14 @@ body.drag-over #content { background:rgba(79,142,247,.03); }
 
 <!-- RENAME MODAL -->
 <div class="overlay" id="modal-rename" onclick="closeModal('modal-rename')">
-  <div class="modal" onclick="event.stopPropagation()">
+  <div class="modal" onclick="event.stopPropagation()" style="max-height:none;height:auto;">
     <div class="m-hd"><div class="m-tt">✏️ Rename</div><button class="m-x" onclick="closeModal('modal-rename')">✕</button></div>
-    <div class="m-body"><div class="f-grp"><div class="f-lbl">New Name</div><input class="f-inp" id="rename-inp" type="text" onkeydown="if(event.key==='Enter')confirmRename()"></div></div>
-    <div class="m-foot">
-      <button class="tb-btn tb-gh" onclick="closeModal('modal-rename')">Cancel</button>
-      <button class="tb-btn tb-pr" onclick="confirmRename()">Rename</button>
+    <div class="m-body" style="overflow:visible;">
+      <div class="f-grp"><div class="f-lbl">New Name</div><input class="f-inp" id="rename-inp" type="text" onkeydown="if(event.key==='Enter')confirmRename()"></div>
+      <div style="display:flex;gap:10px;padding-bottom:max(16px,var(--sb));">
+        <button class="tb-btn tb-gh" onclick="closeModal('modal-rename')" style="flex:1;padding:15px;font-size:16px;border:1.5px solid var(--bdr2);border-radius:13px;">Cancel</button>
+        <button class="tb-btn tb-pr" onclick="confirmRename()" style="flex:1;padding:15px;font-size:16px;border-radius:13px;font-weight:700;">✓ Rename</button>
+      </div>
     </div>
   </div>
 </div>
