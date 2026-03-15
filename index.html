@@ -189,7 +189,7 @@ html,body { height:100%; height:100dvh; background:var(--bg); color:var(--txt); 
 .sel-act.del:active { color:var(--danger); }
 
 /* ── Context menu ──────────────── */
-#ctx-menu { position:fixed; background:var(--surf2); border:1px solid var(--bdr2); border-radius:16px; padding:8px; min-width:200px; box-shadow:0 12px 40px rgba(0,0,0,.5); z-index:500; opacity:0; pointer-events:none; transform:scale(.9); transition:all .15s cubic-bezier(.4,0,.2,1); }
+#ctx-menu { position:fixed; background:var(--surf2); border:1px solid var(--bdr2); border-radius:16px; padding:8px; min-width:220px; box-shadow:0 12px 40px rgba(0,0,0,.6); z-index:500; opacity:0; pointer-events:none; transform:scale(.9); transition:opacity .15s,transform .15s cubic-bezier(.4,0,.2,1); overflow-y:auto; max-height:90vh; }
 #ctx-menu.on { opacity:1; pointer-events:all; transform:scale(1); }
 .ctx-it { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; cursor:pointer; font-size:15px; color:var(--txt2); touch-action:manipulation; }
 .ctx-it:active { background:var(--surf3); color:var(--txt); }
@@ -1157,17 +1157,44 @@ function showCtx(e, id) {
   ctxItem = db.items[id];
   state.ctxTargetId = id;
   const menu = document.getElementById('ctx-menu');
-  menu.classList.add('on');
-  // Position menu — keep it on screen
-  const mw = 210, mh = 320;
-  const navH = window.innerWidth <= 768 ? 70 : 0;
-  let x = e.clientX, y = e.clientY;
-  if (x + mw > window.innerWidth - 8) x = window.innerWidth - mw - 8;
-  if (y + mh > window.innerHeight - navH - 8) y = Math.max(8, window.innerHeight - navH - mh - 8);
-  menu.style.left = x + 'px'; menu.style.top = y + 'px';
-  // Update star label
+  // Update star label before measuring
   const starItem = document.getElementById('ctx-star-item');
   if (starItem) starItem.textContent = (ctxItem?.starred ? '★ Unstar' : '⭐ Star');
+  // Show offscreen first to measure real height
+  menu.style.visibility = 'hidden';
+  menu.style.top = '0px';
+  menu.style.left = '0px';
+  menu.classList.add('on');
+  const mw = menu.offsetWidth || 220;
+  const mh = menu.offsetHeight || 400;
+  const navH = window.innerWidth <= 768 ? 68 : 0;
+  const pad = 10;
+  const screenW = window.innerWidth;
+  const screenH = window.innerHeight;
+  let x = e.clientX;
+  let y = e.clientY;
+  // Keep within horizontal bounds
+  if (x + mw > screenW - pad) x = screenW - mw - pad;
+  if (x < pad) x = pad;
+  // On mobile: always try to open ABOVE the tap point
+  // On desktop: open below if room, above if not
+  const spaceBelow = screenH - navH - y - pad;
+  const spaceAbove = y - pad;
+  if (spaceBelow >= mh) {
+    // enough space below
+  } else if (spaceAbove >= mh) {
+    // open above tap point
+    y = y - mh;
+  } else {
+    // not enough space either way — position at top of available area
+    y = Math.max(pad, screenH - navH - mh - pad);
+  }
+  // Final clamp
+  if (y < pad) y = pad;
+  if (y + mh > screenH - navH - pad) y = Math.max(pad, screenH - navH - mh - pad);
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  menu.style.visibility = 'visible';
 }
 document.addEventListener('click', () => document.getElementById('ctx-menu').classList.remove('on'));
 function ctxOpen() { const it = db.items[state.ctxTargetId]; if(!it) return; if(it.type==='folder') openFolder(it.id); else openViewer(it.id); }
